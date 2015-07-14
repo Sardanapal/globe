@@ -1,0 +1,72 @@
+/* Style of markers */
+#visualization{
+    position: fixed;
+}
+
+.marker {
+    position: absolute;
+    display: none;
+    background: white;
+    opacity: 0.5;
+    border-radius: 6px;
+    color: black;
+    font-size:	8pt;
+    font-family: Arial, 'RopaSans';
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    margin: 0px;
+    border: 0px;
+    padding: 3px;
+    left: 0px;
+    top: 0px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.bar {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.detail {
+    font-style: inherit;
+}
+
+/* Style of statistic table */
+.statTable{
+    z-index: 500;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    background: white;
+    opacity: 0.5;
+    border-radius: 6px;
+    color: black;
+    font-family: Arial;
+}
+
+.statName{
+    margin-right: 10px;
+    font-weight: bold;
+    font-size:15pt;
+}
+
+.statDesc{
+    font-size:13pt;
+}
+
+/* Style of tooltips */
+.tooltip {
+    position: absolute;
+    background: white;
+    opacity: 0.7;
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 12px;
+    line-height: 13px;
+    color: rgb(82, 82, 82);
+    z-index: 400;
+    display: none;
+}
