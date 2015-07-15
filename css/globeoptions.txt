@@ -1,0 +1,25 @@
+  Parameter for presetting Globe widget passed as an javascript object.
+  List of fields is:
+    - "autoRotation" turns On/Off globe auto rotation(default: true),
+    - "starsVisible" turns stars around the globe(default: true),
+    - "dayMode" turns Day/Night skin on the globe(default: true),
+    - "showTooltip" turns On/Off showing bar detail information when you point it by cursor(default: true),
+    - "showStatistic" turns On/Off showing statistic information near each bar (default: true),
+    - "showStatTable" turns On/Off table with statistic information in the bottom right corner(default: false),
+    - "barWidth" define width of the bars on globe(default value 2.75). Can be in limits 0..10,
+    - "tweetColor" define tweet point color, CSS style (default: program calc color using tweet weight field),
+    - "barColor" define bar color, CSS style (default: program calc color using bar height). If you set color as
+                 "#000000"  program will use default value.
+
+  For example:
+
+    var globeOptions = {
+        autoRotation: true,
+        starsVisible: true,
+        dayMode: true,
+        showTooltip: false,
+        showStatistic: true,
+        showStatTable: false,
+        barWidth: 2.75,
+        tweetColor: "#00FFAA"
+    };

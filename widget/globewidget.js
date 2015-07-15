@@ -4,13 +4,15 @@ DAT.Globe = function (container, options) {
 
     "use strict";
 
+    options = options || {};
+
     var colorFn = function (x) {
             var c = new THREE.Color();
             c.setHSL(( 0.6 - ( x * 0.5 ) ), 1.0, 0.5);
             return c;
         };
 
-    var RegionCoord = {
+    var RegionCoordinates = {
         "Europe": [47.97, 16.097],
         "Korea": [38.199, 127.204],
         "North America": [52.279184, -103.289827],
@@ -60,6 +62,7 @@ DAT.Globe = function (container, options) {
     var INTERSECTED = null;
     var barTooltip;
 
+    // list of bar markers
     var markers = [];
 
     var overRenderer;
@@ -80,22 +83,18 @@ DAT.Globe = function (container, options) {
     var PI_HALF = Math.PI / 2;
 
     var controlPanel = new function () {
-        this.AutoRotation = (options !== undefined && options.autoRotation !== undefined && options.autoRotation == false) ? 0.00: 0.003;
-        this.StarsVisible = (options !== undefined && options.starsVisible !== undefined && options.starsVisible == false) ? false : true;
-        this.DayMode = (options !== undefined && options.dayMode !== undefined && options.dayMode == false) ? false : true;
-        this.ShowTooltip = (options !== undefined && options.showTooltip !== undefined && options.showTooltip == false) ? false : true;
-        this.ShowStatistic = (options !== undefined && options.showStatistic !== undefined && options.showStatistic == false) ? false : true;
-        this.ShowStatTable = (options !== undefined && options.showStatTable !== undefined && options.showStatTable == true) ? true : false;
-        this.TweetColor = (options !== undefined && options.tweetColor !== undefined) ? options.tweetColor : "#000000";
-        this.BarColor = (options !== undefined && options.barColor !== undefined) ? options.barColor : "#000000";
+        this.AutoRotation = (options.autoRotation == undefined || options.autoRotation) ? 0.003: 0.00;
+        this.StarsVisible = (options.starsVisible == undefined || options.starsVisible) ? true : false;
+        this.DayMode = (options.dayMode !== undefined && options.dayMode == false) ? false : true;
+        this.ShowTooltip = (options.showTooltip !== undefined && options.showTooltip == false) ? false : true;
+        this.ShowStatistic = (options.showStatistic !== undefined && options.showStatistic == false) ? false : true;
+        this.ShowStatTable = (options.showStatTable !== undefined && options.showStatTable == true) ? true : false;
+        this.TweetColor = (options.tweetColor !== undefined) ? options.tweetColor : "#000000";
+        this.BarColor = (options.barColor !== undefined) ? options.barColor : "#000000";
     }
 
-
     function init() {
-        container.style.color = '#fff';
-        container.style.font = '13px/20px Arial, sans-serif';
-
-        if(options !== undefined && options.barWidth !== undefined && +options.barWidth > 0 && +options.barWidth <= 10) {
+        if(options.barWidth !== undefined && +options.barWidth > 0 && +options.barWidth <= 10) {
             BAR_WIDTH = +options.barWidth;
         }
 
@@ -131,7 +130,6 @@ DAT.Globe = function (container, options) {
 
         barTooltip = createTooltip(container);
         createMarkersPattern(container);
-
         createStatisticTable(container);
 
         container.appendChild(renderer.domElement);
@@ -157,6 +155,7 @@ DAT.Globe = function (container, options) {
             onMouseWheel(evt);
         }, false );
 
+        // run markers switching thread
         setInterval(switchOverMarkers, 2000);
     }
 
@@ -237,7 +236,8 @@ DAT.Globe = function (container, options) {
     }
 
     function createStatisticTable(container){
-        var pattern = '<div><table id="stat_table" class = "statTable" style="display:'+ (controlPanel.showStatTable ? 'inline':'none')+';"></table></div>';
+        var pattern = '<div><table id="stat_table" class = "statTable" style="display:'+
+            (controlPanel.showStatTable ? 'inline':'none')+';"></table></div>';
         $(pattern).insertAfter(container);
     }
 
@@ -325,7 +325,6 @@ DAT.Globe = function (container, options) {
     function drawPCUStatistic(jsonObj) {
         var lat, lng, perc, color;
 
-        //var jsonObj = JSON.parse(jsonStr);
         if(jsonObj == undefined || jsonObj._items == undefined || jsonObj._items[0] == undefined ||
             jsonObj._items[0].regions == undefined){
             return;
@@ -335,21 +334,20 @@ DAT.Globe = function (container, options) {
 
         var maxPCU = getMax(regions, "pccu");
 
-        for (var i = 0; i < regions.length; i++) {
-            var coord = RegionCoord[regions[i].region];
+        regions.forEach(function(region){
+            var coord = RegionCoordinates[region.region];
             if (coord == undefined) {
-                continue;
+                return;
             }
             lat = coord[0];
             lng = coord[1];
-            color = colorFn(regions[i].pccu/maxPCU);
-            perc = +regions[i].pccu / maxPCU;
-            addPoint(lat, lng, perc, color, regions[i].region, regions[i].pccu);
-        }
+            color = colorFn(region.pccu/maxPCU);
+            perc = +region.pccu / maxPCU;
+            addPoint(lat, lng, perc, color, region.region, region.pccu);
+        });
     };
 
     function drawGameStatistic(jsonObj, regionName) {
-        //var jsonObj = JSON.parse(jsonStr);
         if(jsonObj == undefined || jsonObj._items == undefined || jsonObj._items[0] == undefined ||
             jsonObj._items[0].regions == undefined){
             return;
@@ -371,9 +369,7 @@ DAT.Globe = function (container, options) {
         var maxGames = getMax(region.cities, "battles");
         var maxPlayers = getMax(region.cities, "players");
 
-        for (var i = 0; i < region.cities.length; i++) {
-            var city = region.cities[i];
-
+        region.cities.forEach(function(city){
             var lat = city.loc[0];
             var lng = city.loc[1];
             var colorGames = colorFn(city.battles / maxGames);
@@ -384,32 +380,31 @@ DAT.Globe = function (container, options) {
 
             addDoublePoint(lat, lng, sizeGames, sizePlayers, colorGames, colorPlayers,
                 city.city.slice(0, 1).toUpperCase() + city.city.slice(1), city.battles, city.players);
-        }
+        });
     };
 
     function getMaxTweetWeight(tweets){
         var max = 1;
-        for (var i = 0; i < tweets.length; i++) {
-            var weight = tweets[i].weight;
+        tweets.forEach(function(tweet){
+            var weight = tweet.weight;
             if(weight !== undefined && weight > max){
                 max = weight;
             };
-        }
+        });
         return max;
     }
 
     function drawTweets(jsonObj) {
         var lat, lng, color;
 
-        //var jsonObj = JSON.parse(jsonStr);
         if(jsonObj == undefined || jsonObj._items == undefined){
             return;
         }
 
         var tweets = jsonObj._items;
         var maxWeight = getMaxTweetWeight(tweets);
-        for (var i = 0; i < tweets.length; i++) {
-            var tweet = tweets[i];
+
+        tweets.forEach(function(tweet){
             lat = tweet.loc[0];
             lng = tweet.loc[1];
             //color = new THREE.Color();
@@ -421,7 +416,7 @@ DAT.Globe = function (container, options) {
             }
             color = colorFn(bulbRadius/15);
             addTweetPoint(lat, lng, color, bulbRadius);
-        }
+        });
     };
 
     function addTweetPoint(lat, lng, color, bulbRadius) {
@@ -469,8 +464,6 @@ DAT.Globe = function (container, options) {
         point.position.z = coord.z;
 
         point.lookAt(earth.position);
-
-        //point.scale.z = Math.max(perc * MAX_BAR_HEIGHT, 0.1); // avoid non-invertible matrix
         point.updateMatrix();
 
         barContainer.add(point);
@@ -570,7 +563,6 @@ DAT.Globe = function (container, options) {
         event.preventDefault();
         mouseDown = true;
 
-        //container.addEventListener('mousemove', onMouseMove, false);
         container.addEventListener('mouseup', onMouseUp, false);
         container.addEventListener('mouseout', onMouseOut, false);
 
@@ -605,14 +597,12 @@ DAT.Globe = function (container, options) {
     function onMouseUp(event) {
         mouseDown = false;
 
-        //container.removeEventListener('mousemove', onMouseMove, false);
         container.removeEventListener('mouseup', onMouseUp, false);
         container.removeEventListener('mouseout', onMouseOut, false);
         container.style.cursor = 'auto';
     }
 
     function onMouseOut(event) {
-        //container.removeEventListener('mousemove', onMouseMove, false);
         container.removeEventListener('mouseup', onMouseUp, false);
         container.removeEventListener('mouseout', onMouseOut, false);
     }
@@ -665,7 +655,7 @@ DAT.Globe = function (container, options) {
     }
 
     function setCameraToRegion(region) {
-        var coord = RegionCoord[region];
+        var coord = RegionCoordinates[region];
         if (coord !== undefined) {
             setCameraToPoint(coord[0], coord[1]);
         }
@@ -680,9 +670,6 @@ DAT.Globe = function (container, options) {
 
         globe.rotation.y = globe.rotation.y % ( 2 * Math.PI);
         controlPanel.AutoRotation = 0.00;
-
-        /*rotation.y = target.y = Math.asin(coord.y / distance);
-         rotation.x = target.x = Math.asin(coord.x / distance / Math.cos(rotation.y));*/
 
         // define globe rotation task to zero point
         var rotationStart = globe.rotation.y;// rotation start point
@@ -895,11 +882,11 @@ DAT.Globe = function (container, options) {
         markers = [];
     }
 
-    function screenXY(vec3){
+    function screenXY(positionIn3D){
         var widthHalf = 0.5 * renderer.context.canvas.width;
         var heightHalf = 0.5 * renderer.context.canvas.height;
 
-        var vector = vec3.clone();
+        var vector = positionIn3D.clone();
         vector.project(camera);
 
         var result = new THREE.Vector2();
@@ -909,13 +896,13 @@ DAT.Globe = function (container, options) {
         return result;
     }
 
-    function constrain(v, min, max){
-        if( v < min ) {
-            v = min;
-        } else if( v > max ) {
-            v = max;
+    function constrain(value, min, max){
+        if( value < min ) {
+            value = min;
+        } else if( value > max ) {
+            value = max;
         }
-        return v;
+        return value;
     }
 
     function switchOverMarkers(){
