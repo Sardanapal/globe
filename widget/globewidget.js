@@ -224,10 +224,10 @@ DAT.Globe = function (container, options) {
 
     function createMarkersPattern(container){
         var pattern = '<div >'+
-                          '<table id="marker_template" class="marker">' +
+                          '<table class="marker">' +
                                '<tr>'+
-                                  '<td><span id="barText" class="bar"></span></td>' +
-                                  '<td class="detail" id="detailText"></td>'+
+                                  '<td><span class="bar"></span></td>' +
+                                  '<td class="detail"></td>'+
                                '</tr>'+
                           '</table>'+
                       '</div>'+
@@ -331,8 +331,9 @@ DAT.Globe = function (container, options) {
         }
 
         var regions = jsonObj._items[0].regions;
-
         var maxPCU = getMax(regions, "pccu");
+
+        markers.fixed = true; // always show them if visible
 
         regions.forEach(function(region){
             var coord = RegionCoordinates[region.region];
@@ -368,6 +369,8 @@ DAT.Globe = function (container, options) {
 
         var maxGames = getMax(region.cities, "battles");
         var maxPlayers = getMax(region.cities, "players");
+
+        markers.fixed = false; // switch between visible markers
 
         region.cities.forEach(function(city){
             var lat = city.loc[0];
@@ -785,44 +788,37 @@ DAT.Globe = function (container, options) {
     }
 
     function attachMarkerToBar( title, barPosition, text1, text2 ){
-        var container = document.getElementById( 'visualization' );
-        var template = document.getElementById( 'marker_template' );
-        var marker = template.cloneNode(true);
+        var container = $("#visualization")//document.getElementById( 'visualization' );
+        var template = $(".marker:first");//document.getElementById( 'marker_template' );
+        var marker = template.clone(true);
 
-        container.appendChild( marker );
-
-        marker.title = title;
-        marker.hover = false;
+        container.append( marker );
 
         marker.setPosition = function(x,y,z){
-            this.style.left = x + 'px';
-            this.style.top = y + 'px';
-            this.style.zIndex = z;
+            this.css({"left": x + 'px', "top": y + 'px', "z-index": z});
         }
 
         marker.setVisible = function( isVisible ){
-            if(!isVisible){
-                this.style.display = "none";
+            if(!isVisible || !controlPanel.ShowStatistic){
+                this.hide();
                 this.canBeVisible = false;
-            } else {
-                this.canBeVisible = controlPanel.ShowStatistic ? true : false;
-                if (markers.length < 9) { // PCU Statistic always show all visible markers
-                    this.style.display =  controlPanel.ShowStatistic ? 'inline' : 'none';
-                }
+                return;
+            }
+            this.canBeVisible = true;
+            if(markers.fixed){
+                this.show();
             }
         }
 
-        var barLayer = marker.querySelector( '#barText');
-        marker.barLayer = barLayer;
-        var detailLayer = marker.querySelector( '#detailText' );
+        var detailLayer = marker.find('.detail');
         marker.detailLayer = detailLayer;
 
         marker.setSize = function( s ){
             var detailSize = 2 + s;
             detailSize = constrain(detailSize, 8, 15);
-            this.detailLayer.style.fontSize = detailSize + 'pt';
+            this.detailLayer.css("font-size", detailSize + 'pt');
             var totalHeight = detailSize * 1.2;
-            this.style.fontSize = totalHeight + 'pt';
+            this.css("font-size", totalHeight + 'pt');
         }
 
         marker.update = function(){
@@ -844,14 +840,14 @@ DAT.Globe = function (container, options) {
             this.setPosition( screenPos.x, screenPos.y, zIndex );
         }
 
-        var nameLayer = marker.querySelector( '#barText' );
-        nameLayer.innerHTML = '<nbsp>' + title.replace(' ','&nbsp;') + '</nbsp>';
+        var nameLayer = marker.find('.bar');
+        nameLayer.html('<nbsp>' + title.replace(' ','&nbsp;') + '</nbsp>');
 
         var text ='<nobr>' + text1 + '</nbsp>';
         if(text2 !== undefined) {
             text += '<br/><nobr>' + text2 + '</nobr>';
         }
-        detailLayer.innerHTML = text;
+        detailLayer.html(text);
 
         markers.push( marker );
 
@@ -862,19 +858,19 @@ DAT.Globe = function (container, options) {
     function addRowToStatTable(title, text1, text2){
         var table = $('#stat_table');
         var rowTemplate = '<tr width="100px">'+
-            '<td><span id="barText" class="statName"></span></td>' +
-            '<td id="detailText" class="statDesc"></td>'+
+            '<td><span class="statName"></span></td>' +
+            '<td class="statDesc"></td>'+
             '</tr>';
         var row = $(rowTemplate).appendTo(table);
 
-        $(row).find('#barText').html('<nbsp>' + title.replace(' ','&nbsp;') + '</nbsp>');
+        $(row).find('.statName').html('<nbsp>' + title.replace(' ','&nbsp;') + '</nbsp>');
 
         var text ='<nobr>' + text1 + '</nbsp>';
         if(text2 !== undefined) {
             text += '<br/><nobr>' + text2 + '</nobr>';
         }
 
-        $(row).find('#detailText').html(text);
+        $(row).find('.statDesc').html(text);
     }
 
     function removeMarkers(){
@@ -906,6 +902,9 @@ DAT.Globe = function (container, options) {
     }
 
     function switchOverMarkers(){
+        if(markers.fixed){
+            return;
+        }
         var visible = markers.filter(function(marker){
             return marker.canBeVisible;
         });
@@ -916,16 +915,16 @@ DAT.Globe = function (container, options) {
 
         var curMarker = null;
         visible.forEach(function(marker, i){
-            if(marker.style.display == "inline"){
+            if(marker.is(':visible')){
                 curMarker = marker;
                 curMarker.index = i;
-                curMarker.style.display = "none";
+                curMarker.hide();
             }
         });
 
         var nextIndex = curMarker == null || curMarker.index + 1 >= visible.length ? 0 : curMarker.index + 1;
         curMarker = visible[nextIndex];
-        curMarker.style.display = "inline";
+        curMarker.show();
     }
 
     init();
