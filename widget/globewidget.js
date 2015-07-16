@@ -788,8 +788,8 @@ DAT.Globe = function (container, options) {
     }
 
     function attachMarkerToBar( title, barPosition, text1, text2 ){
-        var container = $("#visualization")//document.getElementById( 'visualization' );
-        var template = $(".marker:first");//document.getElementById( 'marker_template' );
+        var container = $("#visualization")
+        var template = $(".marker:first");
         var marker = template.clone(true);
 
         container.append( marker );
