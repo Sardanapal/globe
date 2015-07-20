@@ -286,6 +286,10 @@ DAT.Globe = function (container, options) {
             $("#stat_table").toggle();
         });
 
+        controlPanel.disableStatTable = function(disable){
+            controller.domElement.childNodes[0].disabled = disable;
+        };
+
         var tweetColorController = gui.addColor(controlPanel, "TweetColor");
         tweetColorController.onChange(function (value) {
             for (var i = 0; i < tweetContainer.children.length; i++) {
@@ -325,6 +329,11 @@ DAT.Globe = function (container, options) {
     function drawPCUStatistic(jsonObj) {
         var lat, lng, perc, color;
 
+        controlPanel.disableStatTable(false);
+        if(controlPanel.ShowStatTable){
+            $("#stat_table").show();
+        }
+
         if(jsonObj == undefined || jsonObj._items == undefined || jsonObj._items[0] == undefined ||
             jsonObj._items[0].regions == undefined){
             return;
@@ -349,6 +358,11 @@ DAT.Globe = function (container, options) {
     };
 
     function drawGameStatistic(jsonObj, regionName) {
+        controlPanel.disableStatTable(false);
+        if(controlPanel.ShowStatTable){
+            $("#stat_table").show();
+        }
+
         if(jsonObj == undefined || jsonObj._items == undefined || jsonObj._items[0] == undefined ||
             jsonObj._items[0].regions == undefined){
             return;
@@ -388,6 +402,9 @@ DAT.Globe = function (container, options) {
 
     function drawTweets(jsonObj) {
         var lat, lng, color;
+
+        $("#stat_table").hide();
+        controlPanel.disableStatTable(true);
 
         if(jsonObj == undefined || jsonObj._items == undefined){
             return;
@@ -512,7 +529,7 @@ DAT.Globe = function (container, options) {
         mesh.updateMatrix();
 
         barContainer.add(mesh);
-        attachMarker( city, coord, "Battles: " + battles, "Players: " + players);
+        attachMarker( city, coord, "Battles: " + battles, "New players: " + players);
 
         meshToggle(barContainer, mesh, BAR_OPACITY);
     }
