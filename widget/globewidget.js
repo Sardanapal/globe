@@ -394,7 +394,7 @@ DAT.Globe = function (container, options) {
         }
 
         var tweets = jsonObj._items;
-        var maxWeight = getMax(tweets, "tweet_cnt");
+        var maxWeight = getMax(tweets, "twit_cnt");
 
         tweets.forEach(function(tweet){
             lat = tweet.loc[0];
@@ -403,10 +403,10 @@ DAT.Globe = function (container, options) {
             //color.setHex(0xAAFF);
 
             var bulbRadius = 5;
-            bulbRadius += 10 * tweet.tweet_cnt / maxWeight;
+            bulbRadius += 10 * tweet.twit_cnt / maxWeight;
 
             color = colorFn(bulbRadius/15);
-            addTweetPoint(lat, lng, color, bulbRadius, tweet.city, tweet.tweet_cnt);
+            addTweetPoint(lat, lng, color, bulbRadius, tweet.city, tweet.twit_cnt);
         });
     };
 
