@@ -482,15 +482,17 @@ DAT.Globe = function (container, options) {
         }
 
         var barPlayers = new THREE.Mesh(geometry);
-        for (var j = 0; j < geometry.faces.length; j++)
+        for (var j = 0; j < geometry.faces.length; j++) {
             geometry.faces[j].color = color1;
+        }
         barPlayers.scale.z = Math.max(size1, 0.1); // avoid non-invertible matrix
         barPlayers.updateMatrix();
         THREE.GeometryUtils.merge(combined, barPlayers);
 
         var barGames = new THREE.Mesh(geometry);
-        for (var j = 0; j < geometry.faces.length; j++)
+        for (var j = 0; j < geometry.faces.length; j++) {
             geometry.faces[j].color = color2;
+        }
         barGames.position.x = -BAR_WIDTH;
         barGames.scale.z = Math.max(size2, 0.1); // avoid non-invertible matrix
         barGames.updateMatrix();
