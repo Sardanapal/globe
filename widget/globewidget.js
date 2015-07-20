@@ -386,17 +386,6 @@ DAT.Globe = function (container, options) {
         });
     };
 
-    /*function getMaxTweetWeight(tweets){
-        var max = 1;
-        tweets.forEach(function(tweet){
-            var weight = tweet.weight;
-            if(weight !== undefined && weight > max){
-                max = weight;
-            };
-        });
-        return max;
-    }*/
-
     function drawTweets(jsonObj) {
         var lat, lng, color;
 
