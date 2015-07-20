@@ -1,11 +1,15 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
+    <title>Globe of War</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<meta name="author" content="wargaming.net">
+    
+	<link rel="shortcut icon" href="favicon.ico">
     <link rel="stylesheet" type="text/css" href="css/menuwidget.css">
     <link rel="stylesheet" type="text/css" href="css/twitterwidget.css">
     <link rel="stylesheet" type="text/css" href="css/globewidget.css">
-    <title>Globe of War</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    
     <style type="text/css">
         html {
             height: 100%;
@@ -19,194 +23,202 @@
             font-family: sans-serif;
             font-size: 13px;
             line-height: 20px;
-            height: 90%;
+            height: 100%;
         }
     </style>
 
-<script type="text/javascript" src="third-party/detector.js"></script>
-<script type="text/javascript" src="third-party/three.js"></script>
-<script type="text/javascript" src="third-party/jquery-2.1.4.min.js"></script>
-<script type="text/javascript" src="third-party/dat.gui.js"></script>
-<script type="text/javascript" src="third-party/tween.js"></script>
-<script type="text/javascript" src="third-party/jquery.vticker-min.js"></script>
-<script type="text/javascript" src="css/globeoptions.js"></script>
-<script type="text/javascript" src="widget/globewidget.js"></script>
+	<script type="text/javascript" src="third-party/detector.js"></script>
+	<script type="text/javascript" src="third-party/three.js"></script>
+	<script type="text/javascript" src="third-party/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="third-party/dat.gui.js"></script>
+	<script type="text/javascript" src="third-party/tween.js"></script>
+	<script type="text/javascript" src="third-party/jquery.vticker-min.js"></script>
+	<script type="text/javascript" src="css/globeoptions.js"></script>
+	<script type="text/javascript" src="widget/globewidget.js"></script>
 </head>
+
 <body>
+	<div id="globe-container"></div>
 
-<div id="container"></div>
+	<div class="menu-container">
+		<div id="regions">
+			<ul class="panel">
+				<li><h3>REGIONS:</h3></li>
+				<li id="regionAll"           class="animation">All Regions</a></li>
+				<li id="regionEurope"        class="animation">Europe</li>
+				<li id="regionKorea"         class="animation">Korea</li>
+				<li id="regionNorthAmerica"  class="animation">North America</li>
+				<li id="regionNorthChina"    class="animation">North China</li>
+				<li id="regionRussia"        class="animation">Russia</li>
+				<li id="regionSouthChina"    class="animation">South China</li>
+				<li id="regionSouthEastAsia" class="animation">South-East Asia</li>
+			</ul>
+		</div>
+		<div id="statistics">
+			<ul class="panel">
+				<li><h3>DISPLAY:</h3></li>
+				<li id="statBattles"          class="animation">Battles/Players</a></li>
+				<li id="statTwitts"           class="animation">Latest Twitts</li>
+			</ul>
+		</div>
+	</div>
 
-<div class="container">
-    <div id="regions">
-    <ul id="panel">
-        <li><h3>REGIONS:</h3></li>
-        <li id="regionAll"           class="animation">All Regions</a></li>
-        <li id="regionEurope"        class="animation">Europe</li>
-        <li id="regionKorea"         class="animation">Korea</li>
-        <li id="regionNorthAmerica"  class="animation">North America</li>
-        <li id="regionNorthChina"    class="animation">North China</li>
-        <li id="regionRussia"        class="animation">Russia</li>
-        <li id="regionSouthChina"    class="animation">South China</li>
-        <li id="regionSouthEastAsia" class="animation">South-East Asia</li>
-    </ul>
-    </div>
-    <div id="statistics">
-    <ul id="panel">
-        <li><h3>DISPLAY:</h3></li>
-        <li id="statBattles"          class="animation">Battles/Players</a></li>
-        <li id="statTwitts"           class="animation">Latest Twitts</li>
-    </ul>
-    </div>
-</div>
+	<div id="twitter-container">
+		<ul id="twitter-items">
+		</ul>
+	</div>
 
-<div id="twitter-container">
-    <ul>
-		<li><blockquote class="twitter-tweet">He has so many world of tanks cards coming his way</blockquote></li>
-		<li><blockquote class="twitter-tweet">Myogi | Road to Yamato | Gameplay | World of warships: <a href="http://t.co/XuLzMqbWE8">http://t.co/XuLzMqbWE8</a> via @YouTube</blockquote></li>
-		<li><blockquote class="twitter-tweet">I liked a @YouTube video from @baronvongamez <a href="http://t.co/aleiyqCnpb">http://t.co/aleiyqCnpb</a> World of Warships 40 TORPEDOES! Kitakami vs Yamato, Japanese</blockquote></li>
-		<li><blockquote class="twitter-tweet">В такие моменты горечь поражения чувствуется сильнее всего �� #WorldofWarships #WoWs <a href="http://t.co/n9gEEy5RKP">http://t.co/n9gEEy5RKP</a></blockquote></li>
-		<li><blockquote class="twitter-tweet">[EN] Ectar - World of Warships - Set Sail for Sunday!: <a href="http://t.co/pqgLnZp461">http://t.co/pqgLnZp461</a></blockquote></li>
-		<li><blockquote class="twitter-tweet">Более 500 воронежцев сразились в открытом турнире World of Tanks | РИА Воронеж <a href="http://t.co/KcFFNd7ESb">http://t.co/KcFFNd7ESb</a></blockquote></li>
-		<li><blockquote class="twitter-tweet">I want to watch wowp</blockquote></li>
-		<li><blockquote class="twitter-tweet">I liked a @YouTube video from @baronvongamez http://t.co/W9SIgp8dvI World of Warships 40 TORPEDOES! Kitakami vs Yamato, Japanese</blockquote></li>
-		<li><blockquote class="twitter-tweet">Мне понравилось видео \"World of Warships - С котэтаном Garro!\" (<a href="http://t.co/w5KjKgo4V0">http://t.co/w5KjKgo4V0</a>) на @YouTube.v</li>
-		<li><blockquote class="twitter-tweet">I was somewhere but can\'t remember and I saw someone who looked exactly like Alex Russo when he was young from WOWP</blockquote></li>
-		<li><blockquote class="twitter-tweet">Max from WoWP got all... Grown up?? <a href="https://t.co/LfxT1D9xVQ">https://t.co/LfxT1D9xVQ</a></blockquote></li>
-    </ul>
+	<script type="text/javascript">
 
-</div>
-
-<script type="text/javascript">
-
-	$('#twitter-container').vTicker({ 
-		speed: 500,
-		pause: 3000,
-		animation: 'fade',
-		mousePause: true,
-		showItems: 6
-	});
 	
-	$('#twitter-container').hide();
+		$('#twitter-container').hide();
 
+		if (!Detector.webgl) {
+			Detector.addGetWebGLMessage();
+		} else {
 
+			var container = document.getElementById('globe-container');
+			var globe = new DAT.Globe(container, globeOptions);
 
-    if (!Detector.webgl) {
-        Detector.addGetWebGLMessage();
-    } else {
+			var ajaxRegions = null;
+			var ajaxTweet = null;
 
-        var container = document.getElementById('container');
-        var globe = new DAT.Globe(container, globeOptions);
+			var curView = "PCU"; // PCU, Tweets, Region
+			var regionName = null;
+			
+			function processTweets(jsonObj) {
+				if(jsonObj == undefined || jsonObj._items == undefined) {
+					return;
+				}
 
-        var ajaxRegions = null;
-        var ajaxTweet = null;
+				$( "#twitter-items" ).empty();
+		
+				var tweets = jsonObj._items;
 
-        var curView = "PCU"; // PCU, Tweets, Region
-        var regionName = null;
+				tweets.forEach(function(tweet){
+					msg = tweet.text;
+					$( "#twitter-items" ).append("<li><blockquote class=\"twitter-tweet\">" + msg + "</blockquote></li>");
+				});
 
-        function requestTweets() {
-            $.ajax({
-                url: 'tweets.json',
-                //dataType: 'json',
-                type: 'GET',
-                async: true,
-                cache: false,
-                error: function () {
-                    return true;
-                },
-                success: function (msg) {
-                    ajaxTweet = msg;
-                    globe.removeOldTweets();
-                    if(curView == "Tweets"){
-                        globe.drawTweets(ajaxTweet);
-            }
-        }
-            });
-        }
+				$('#twitter-container').show();
+		
+				$('#twitter-container').vTicker({ 
+					speed: 500,
+					pause: 3000,
+					showItems: 6,
+					animation: 'fade',
+					mousePause: true,
+					height: 0,
+					direction: 'up'
+				});
+	
+				$('#twitter-container').hide();
+			};
 
-        function requestRegions() {
-            $.ajax({
-                url: 'regions.json',
-                //dataType: 'json',
-                type: 'GET',
-                async: true,
-                cache: false,
-                error: function () {
-                    return true;
-                },
-                success: function (msg) {
-                    ajaxRegions = msg;
-                    globe.removeOldData();
-                    if(curView == "PCU") {
-                        globe.drawPCUStatistic(ajaxRegions);
-                    } else if(curView == "Region"){
-                        globe.drawGameStatistic(ajaxRegions, regionName);
-                    }
-                }
-            });
-        }
+			function requestTweets() {
+				$.ajax({
+					url: 'tweets.json',
+					//dataType: 'json',
+					type: 'GET',
+					async: true,
+					cache: false,
+					error: function () {
+						return true;
+					},
+					success: function (msg) {
+						ajaxTweet = msg;
+						globe.removeOldTweets();
+						if(curView == "Tweets"){
+							globe.drawTweets(ajaxTweet);
+						}
+						processTweets(ajaxTweet);
+					}
+				});
+			}
 
-        $(document).ready(function ($) {
+			function requestRegions() {
+				$.ajax({
+					url: 'regions.json',
+					//dataType: 'json',
+					type: 'GET',
+					async: true,
+					cache: false,
+					error: function () {
+						return true;
+					},
+					success: function (msg) {
+						ajaxRegions = msg;
+						globe.removeOldData();
+						if(curView == "PCU") {
+							globe.drawPCUStatistic(ajaxRegions);
+						} else if(curView == "Region"){
+							globe.drawGameStatistic(ajaxRegions, regionName);
+						}
+					}
+				});
+			}
 
-            requestRegions();
-            requestTweets();
-        globe.animate();
-        document.body.style.backgroundImage = 'none';
+			$(document).ready(function ($) {
+				requestRegions();
+				requestTweets();
+				
+				globe.animate();
+				document.body.style.backgroundImage = 'none';
 
-        $("#regions").click(function(event){
-  	    // alert($(event.target).attr("id"));
-	    $( "*" ).removeClass( "active" );
-            $(event.target).toggleClass('active');
+				$("#regions").click(function(event) {
+					$( "*" ).removeClass( "active" );
+					$(event.target).toggleClass('active');
 
-            globe.removeOldData();
-            globe.removeOldTweets();
+					globe.removeOldData();
+					globe.removeOldTweets();
 
-		$("#twitter-container").fadeIn();
-		$("#twitter-container").hide();
+					$("#twitter-container").fadeIn();
+					$("#twitter-container").hide();
 
-	    switch ($(event.target).attr("id")) {
-		case "regionAll" : 
-                        globe.drawPCUStatistic(ajaxRegions);
-                	globe.setCameraToRegion("All");
-                        curView = "PCU";
-			break;
-                    default :
-                        var region = $(event.target).text();
-                        globe.drawGameStatistic(ajaxRegions, region);
-                        globe.setCameraToRegion(region);
-                        curView = "Region";
-                        regionName = event.target.innerText;
-	    }
-        });
+					switch ($(event.target).attr("id")) {
+						case "regionAll" : 
+							globe.drawPCUStatistic(ajaxRegions);
+							globe.setCameraToRegion("All");
+							curView = "PCU";
+							break;
+						default :
+							var region = $(event.target).text();
+							globe.drawGameStatistic(ajaxRegions, region);
+							globe.setCameraToRegion(region);
+							curView = "Region";
+							regionName = event.target.innerText;
+					}
+				});
 
-        $("#statistics").click(function(event){
-  	    // alert($(event.target).attr("id"));
-	    $( "*" ).removeClass( "active" );
-            $(event.target).toggleClass('active');
+				$("#statistics").click(function(event) {
+					$( "*" ).removeClass( "active" );
+					$(event.target).toggleClass('active');
 
-            globe.removeOldData();
-            globe.removeOldTweets();
+					globe.removeOldData();
+					globe.removeOldTweets();
+					
+					$("#twitter-container").fadeIn();
+					$("#twitter-container").hide();
 
-	    switch ($(event.target).attr("id")) {
-		case "statBattles" : 
-                        globe.drawPCUStatistic(ajaxRegions);
-                	globe.setCameraToRegion("All");
-                        curView = "PCU";
-			break;
-		case "statTwitts" : 
-                        globe.drawTweets(ajaxTweet);
-			$("#twitter-container").show();
-                        curView = "Tweets";
-			break;
-	    }
-        });
-        });
+					switch ($(event.target).attr("id")) {
+						case "statBattles" : 
+							globe.drawPCUStatistic(ajaxRegions);
+							globe.setCameraToRegion("All");
+							curView = "PCU";
+							break;
+						case "statTwitts" : 
+							globe.drawTweets(ajaxTweet);
+							$("#twitter-container").show();
+							curView = "Tweets";
+							break;
+					}
+				});
+			});
 
-        setInterval(requestRegions, 60000 * 60 * 24); // once per day
-        setInterval(requestTweets, 60000 * 60); // once per hour
-    }
+			setInterval(requestRegions, 60000 * 60 * 24); // once per day
+			setInterval(requestTweets, 60000 * 60); // once per hour
+		}
 
-</script>
-
+	</script>
 </body>
-
 </html>

@@ -5,8 +5,8 @@ var globeOptions = {
     showTooltip: false,   // turns On/Off showing bar detail information when you point it by cursor(default: true)
     showStatistic: true,  // turns On/Off showing statistic information near each bar (default: true)
     showStatTable: false, // turns On/Off table with statistic information in the bottom right corner(default: false)
-    barWidth: 2.75,       // define width of the bars on globe(default value 2.75). Can be in limits 0..10
+    barWidth: 1.0,       // define width of the bars on globe(default value 2.75). Can be in limits 0..10
     tweetColor: "#000000",// define tweet point color, CSS style (default: program calc color using tweet weight field)
-    barColor: "#000000"   // define bar color, CSS style (default: program calc color using bar height)
+    barColor: "#ffffff"   // define bar color, CSS style (default: program calc color using bar height)
                           // When you set "#000000" color program will use default value
 };

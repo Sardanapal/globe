@@ -386,7 +386,7 @@ DAT.Globe = function (container, options) {
         });
     };
 
-    function getMaxTweetWeight(tweets){
+    /*function getMaxTweetWeight(tweets){
         var max = 1;
         tweets.forEach(function(tweet){
             var weight = tweet.weight;
@@ -395,7 +395,7 @@ DAT.Globe = function (container, options) {
             };
         });
         return max;
-    }
+    }*/
 
     function drawTweets(jsonObj) {
         var lat, lng, color;
@@ -405,7 +405,7 @@ DAT.Globe = function (container, options) {
         }
 
         var tweets = jsonObj._items;
-        var maxWeight = getMaxTweetWeight(tweets);
+        var maxWeight = getMax(tweets, "twit_cnt");
 
         tweets.forEach(function(tweet){
             lat = tweet.loc[0];
@@ -414,15 +414,14 @@ DAT.Globe = function (container, options) {
             //color.setHex(0xAAFF);
 
             var bulbRadius = 5;
-            if(tweet.weight !== undefined){
-                bulbRadius += 10 * tweet.weight / maxWeight;
-            }
+            bulbRadius += 10 * tweet.twit_cnt / maxWeight;
+
             color = colorFn(bulbRadius/15);
-            addTweetPoint(lat, lng, color, bulbRadius);
+            addTweetPoint(lat, lng, color, bulbRadius, tweet.city, tweet.twit_cnt);
         });
     };
 
-    function addTweetPoint(lat, lng, color, bulbRadius) {
+    function addTweetPoint(lat, lng, color, bulbRadius, city, tweetCnt) {
         if(controlPanel.TweetColor !== "#000000"){
             color = new THREE.Color(controlPanel.TweetColor);
         }
@@ -446,6 +445,7 @@ DAT.Globe = function (container, options) {
 
         tweetContainer.add(mesh);
         meshToggle(tweetContainer, mesh, 0.75);
+        attachMarker( "<nobr>" + city + "</nobr>", pos, "Tweets: " + tweetCnt);
     }
 
     function addPoint(lat, lng, perc, color, region, pccu) {
@@ -470,7 +470,7 @@ DAT.Globe = function (container, options) {
         point.updateMatrix();
 
         barContainer.add(point);
-        attachMarkerToBar( region, coord, "PCCU: " + pccu);
+        attachMarker( region, coord, "PCCU: " + pccu);
 
         var height = {z : 1};
         var tweenGrow = new TWEEN.Tween(height)
@@ -521,7 +521,7 @@ DAT.Globe = function (container, options) {
         mesh.updateMatrix();
 
         barContainer.add(mesh);
-        attachMarkerToBar( city, coord, "Battles: " + battles, "Players: " + players);
+        attachMarker( city, coord, "Battles: " + battles, "Players: " + players);
 
         meshToggle(barContainer, mesh, BAR_OPACITY);
     }
@@ -787,7 +787,7 @@ DAT.Globe = function (container, options) {
         $('#stat_table').empty();
     }
 
-    function attachMarkerToBar( title, barPosition, text1, text2 ){
+    function attachMarker( title, position, text1, text2 ){
         var container = $("#visualization")
         var template = $(".marker:first");
         var marker = template.clone();
@@ -823,7 +823,7 @@ DAT.Globe = function (container, options) {
 
         marker.update = function(){
             var matrix = globe.matrixWorld;
-            var abspos = barPosition.clone().applyProjection(matrix);
+            var abspos = position.clone().applyProjection(matrix);
             var screenPos = screenXY(abspos);
 
             var center = globe.position.clone();
