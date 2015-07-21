@@ -12,15 +12,15 @@ DAT.Globe = function (container, options) {
             return c;
         };
 
-    var RegionCoordinates = {
-        "Europe": [47.97, 16.097],
-        "Korea": [38.199, 127.204],
-        "North America": [52.279184, -103.289827],
-        "North China": [39.956174, 104.110969],
-        "South China": [27.425535, 106.923469],
-        "Russia": [60.959843, 58.232063],
-        "South-East Asia": [17.324551, 114.965461]
-    };
+    var RegionsData = [
+        {full: "Europe", short:"EU", loc: [47.97, 16.097]},
+        {full: "Korea", short:"KR", loc: [38.199, 127.204]},
+        {full: "North America", short:"NA", loc: [52.279184, -103.289827]},
+        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969]},
+        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469]},
+        {full: "Russia", short:"RU", loc: [60.959843, 58.232063]},
+        {full: "South-East Asia", short:"SEA", loc: [17.324551, 114.965461]}
+    ];
 
     var Shaders = {
         'earth': {
@@ -326,6 +326,16 @@ DAT.Globe = function (container, options) {
         return current / max * MAX_BAR_HEIGHT;
     }
 
+    function findRegionInRef(name, type){
+        for(var i = 0; i < RegionsData.length; i++){
+            var regionRef = RegionsData[i];
+            if(name == (type == "full" ? regionRef.full : regionRef.short)){
+                return regionRef;
+            }
+        }
+        return null;
+    }
+
     function drawPCUStatistic(jsonObj) {
         var lat, lng, perc, color;
 
@@ -345,15 +355,17 @@ DAT.Globe = function (container, options) {
         markers.fixed = true; // always show them if visible
 
         regions.forEach(function(region){
-            var coord = RegionCoordinates[region.region];
-            if (coord == undefined) {
+            var regionRef = findRegionInRef(region.region, "short");
+            if(regionRef == null){
                 return;
             }
+            var coord = regionRef.loc;
+
             lat = coord[0];
             lng = coord[1];
             color = colorFn(region.pccu/maxPCU);
             perc = +region.pccu / maxPCU;
-            addPoint(lat, lng, perc, color, region.region, region.pccu);
+            addPoint(lat, lng, perc, color, regionRef.full, region.pccu);
         });
     };
 
@@ -370,9 +382,14 @@ DAT.Globe = function (container, options) {
 
         var regionArr = jsonObj._items[0].regions;
 
+        var regionRef = findRegionInRef(regionName, "full");
+        if(regionRef == null){
+            return;
+        }
+
         var region;
         for (var i = 0; i < regionArr.length; i++) {
-            if (regionName == regionArr[i].region) {
+            if (regionRef.short == regionArr[i].region) {
                 region = regionArr[i];
                 break;
             }
@@ -389,6 +406,12 @@ DAT.Globe = function (container, options) {
         region.cities.forEach(function(city){
             var lat = city.loc[0];
             var lng = city.loc[1];
+
+            if(lat == 0.0 && lng == 0.0){
+                console.log("Coordinates for " + city.city + " not found. City skiped.")
+                return;
+            }
+
             var colorGames = colorFn(city.battles / maxGames);
             var colorPlayers = colorFn(city.players / maxPlayers / 2);
 
@@ -665,12 +688,12 @@ DAT.Globe = function (container, options) {
         TWEEN.update();
     }
 
-    function setCameraToRegion(region) {
-        var coord = RegionCoordinates[region];
-        if (coord !== undefined) {
-            setCameraToPoint(coord[0], coord[1]);
+    function setCameraToRegion(regionName) {
+        var regionRef = findRegionInRef(regionName, "full");
+        if(regionRef != null && regionRef.loc !== undefined){
+            setCameraToPoint(regionRef.loc[0], regionRef.loc[1]);
         }
-        var fileName = imgDir + 'outlines/' + region + '.png';
+        var fileName = imgDir + 'outlines/' + regionName + '.png';
         countryOutlines.material.map = THREE.ImageUtils.loadTexture(fileName, undefined, undefined, function () {
             console.log("File with texture " + fileName + " not found!")
         });

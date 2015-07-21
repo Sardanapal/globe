@@ -6,26 +6,11 @@
 	<meta name="author" content="wargaming.net">
     
 	<link rel="shortcut icon" href="favicon.ico">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+	
     <link rel="stylesheet" type="text/css" href="css/menuwidget.css">
     <link rel="stylesheet" type="text/css" href="css/twitterwidget.css">
     <link rel="stylesheet" type="text/css" href="css/globewidget.css">
-    
-    <style type="text/css">
-        html {
-            height: 100%;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background: #000000 url(image/loading.gif) center center no-repeat;
-            color: #ffffff;
-            font-family: sans-serif;
-            font-size: 13px;
-            line-height: 20px;
-            height: 100%;
-        }
-    </style>
 
 	<script type="text/javascript" src="third-party/detector.js"></script>
 	<script type="text/javascript" src="third-party/three.js"></script>
@@ -38,34 +23,50 @@
 </head>
 
 <body>
-	<div id="globe-container"></div>
+	
+	
+	<div class="top-header">
+		<h1 id="header">ALL REGIONS/PCCU</h3>
+	</div>
+	
+	<div id="globe-container" class="globe"></div>
 
 	<div class="menu-container">
 		<div id="regions">
 			<ul class="panel">
 				<li><h3>REGIONS:</h3></li>
-				<li id="regionAll"           class="animation">All Regions</a></li>
-				<li id="regionEurope"        class="animation">Europe</li>
-				<li id="regionKorea"         class="animation">Korea</li>
-				<li id="regionNorthAmerica"  class="animation">North America</li>
-				<li id="regionNorthChina"    class="animation">North China</li>
-				<li id="regionRussia"        class="animation">Russia</li>
-				<li id="regionSouthChina"    class="animation">South China</li>
-				<li id="regionSouthEastAsia" class="animation">South-East Asia</li>
+				<li id="region-all"           class="animation">All Regions</a></li>
+				<li id="region-europe"        class="animation">Europe</li>
+				<li id="region-korea"         class="animation">Korea</li>
+				<li id="region-north-america"  class="animation">North America</li>
+				<li id="region-north-china"    class="animation">North China</li>
+				<li id="region-russia"        class="animation">Russia</li>
+				<li id="region-south-china"    class="animation">South China</li>
+				<li id="region-south-east-asia" class="animation">South-East Asia</li>
 			</ul>
 		</div>
 		<div id="statistics">
 			<ul class="panel">
 				<li><h3>DISPLAY:</h3></li>
-				<li id="statBattles"          class="animation">Battles/Players</a></li>
-				<li id="statTwitts"           class="animation">Latest Twitts</li>
+				<li id="stat-battles"          class="animation">Battles/Players</a></li>
+				<li id="stat-tweetts"           class="animation">Latest Tweetts</li>
+			</ul>
+		</div>
+		<div id="time-period">
+			<ul class="panel">
+				<li><h3>TIME PERIOD:</h3></li>
+				<li id="time-last-24hrs"          class="animation">Last 24 hrs</a></li>
 			</ul>
 		</div>
 	</div>
-
+	
 	<div id="twitter-container">
 		<ul id="twitter-items">
 		</ul>
+	</div>
+
+	<div class="bottom-footer">
+		<h3 id="footer">Past 24 hrs</h3>
 	</div>
 
 	<script type="text/javascript">
@@ -81,7 +82,8 @@
 			var globe = new DAT.Globe(container, globeOptions);
 
 			var ajaxRegions = null;
-			var ajaxTweet = null;
+			var ajaxTweetMsg = null;
+			var ajaxTweetLoc = null;
 
 			var curView = "PCU"; // PCU, Tweets, Region
 			var regionName = null;
@@ -115,9 +117,10 @@
 				$('#twitter-container').hide();
 			};
 
-			function requestTweets() {
+			function requestTweetsMessages() {
 				$.ajax({
-					url: 'tweets.json',
+					//url: 'http://10.175.129.7:5000/twittertop?max_results=100',
+					url: 'tweetsmsg.json',
 					//dataType: 'json',
 					type: 'GET',
 					async: true,
@@ -126,19 +129,38 @@
 						return true;
 					},
 					success: function (msg) {
-						ajaxTweet = msg;
+						ajaxTweetMsg = msg;
+						processTweets(ajaxTweetMsg);
+					}
+				});
+			}
+			
+			function requestTweetsLocations() {
+				$.ajax({
+					//url: 'http://10.175.129.7:5000/citytwits?max_results=100',
+					url: 'tweetsloc.json',
+					//dataType: 'json',
+					type: 'GET',
+					async: true,
+					cache: false,
+					error: function () {
+						return true;
+					},
+					success: function (msg) {
+						ajaxTweetLoc = msg;
 						globe.removeOldTweets();
+						
 						if(curView == "Tweets"){
-							globe.drawTweets(ajaxTweet);
+							globe.drawTweets(ajaxTweetLoc);
 						}
-						processTweets(ajaxTweet);
 					}
 				});
 			}
 
 			function requestRegions() {
 				$.ajax({
-					url: 'regions.json',
+					//url: 'http://10.175.129.7:5000/citytop?max_results=1',
+					url: 'pcu.json',
 					//dataType: 'json',
 					type: 'GET',
 					async: true,
@@ -160,63 +182,75 @@
 
 			$(document).ready(function ($) {
 				requestRegions();
-				requestTweets();
+				requestTweetsLocations();
+				requestTweetsMessages();
 				
 				globe.animate();
 				document.body.style.backgroundImage = 'none';
 
 				$("#regions").click(function(event) {
-					$( "*" ).removeClass( "active" );
-					$(event.target).toggleClass('active');
+					id = $(event.target).attr("id");
+					if (typeof id !== "undefined") {
+						$( "*" ).removeClass( "active" );
+						$(event.target).toggleClass('active');
 
-					globe.removeOldData();
-					globe.removeOldTweets();
+						globe.removeOldData();
+						globe.removeOldTweets();
 
-					$("#twitter-container").fadeIn();
-					$("#twitter-container").hide();
-
-					switch ($(event.target).attr("id")) {
-						case "regionAll" : 
-							globe.drawPCUStatistic(ajaxRegions);
-							globe.setCameraToRegion("All");
-							curView = "PCU";
-							break;
-						default :
-							var region = $(event.target).text();
-							globe.drawGameStatistic(ajaxRegions, region);
-							globe.setCameraToRegion(region);
-							curView = "Region";
-							regionName = event.target.innerText;
+						$("#twitter-container").fadeIn();
+						$("#twitter-container").hide();
+					
+						switch (id) {
+							case "region-all" : 
+								$("#header").text("ALL REGIONS/PCCU");
+								globe.drawPCUStatistic(ajaxRegions);
+								globe.setCameraToRegion("All");
+								curView = "PCU";
+								break;
+							default :
+								var region = $(event.target).text();
+								$("#header").text(region+"/BATTLES");
+								globe.drawGameStatistic(ajaxRegions, region);
+								globe.setCameraToRegion(region);
+								curView = "Region";
+								regionName = event.target.innerText;
+						}
 					}
 				});
 
 				$("#statistics").click(function(event) {
-					$( "*" ).removeClass( "active" );
-					$(event.target).toggleClass('active');
+					id = $(event.target).attr("id");
+					if (typeof id !== "undefined") {
+						$( "*" ).removeClass( "active" );
+						$(event.target).toggleClass('active');
 
-					globe.removeOldData();
-					globe.removeOldTweets();
+						globe.removeOldData();
+						globe.removeOldTweets();
 					
-					$("#twitter-container").fadeIn();
-					$("#twitter-container").hide();
+						$("#twitter-container").fadeIn();
+						$("#twitter-container").hide();
 
-					switch ($(event.target).attr("id")) {
-						case "statBattles" : 
-							globe.drawPCUStatistic(ajaxRegions);
-							globe.setCameraToRegion("All");
-							curView = "PCU";
-							break;
-						case "statTwitts" : 
-							globe.drawTweets(ajaxTweet);
-							$("#twitter-container").show();
-							curView = "Tweets";
-							break;
+						switch (id) {
+							case "stat-battles" :
+								$("#header").text("ALL REGIONS/PCCU");						
+								globe.drawPCUStatistic(ajaxRegions);
+								globe.setCameraToRegion("All");
+								curView = "PCU";
+								break;
+							case "stat-tweetts" : 
+								$("#header").text("ALL REGIONS/TWEETS");
+								globe.drawTweets(ajaxTweetLoc);
+								$("#twitter-container").show();
+								curView = "Tweets";
+								break;
+						}
 					}
 				});
 			});
 
 			setInterval(requestRegions, 60000 * 60 * 24); // once per day
-			setInterval(requestTweets, 60000 * 60); // once per hour
+			setInterval(requestTweetsLocations, 60000 * 60); // once per hour
+			setInterval(requestTweetsMessages, 60000 * 60); // once per hour
 		}
 
 	</script>

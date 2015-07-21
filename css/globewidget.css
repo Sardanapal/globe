@@ -1,8 +1,8 @@
 /* Style of markers */
-#visualization{
+
+#visualization {
     position: fixed;
 }
-
 .marker {
     position: absolute;
     display: none;
@@ -10,7 +10,7 @@
     opacity: 0.5;
     border-radius: 6px;
     color: black;
-    font-size:	8pt;
+    font-size: 8pt;
     font-family: Arial, 'RopaSans';
     -moz-user-select: -moz-none;
     -khtml-user-select: none;
@@ -23,18 +23,16 @@
     overflow: hidden;
     cursor: pointer;
 }
-
 .bar {
     margin-right: 10px;
     font-weight: bold;
 }
-
 .detail {
     font-style: inherit;
 }
-
 /* Style of statistic table */
-.statTable{
+
+.statTable {
     z-index: 500;
     position: absolute;
     right: 10px;
@@ -45,18 +43,16 @@
     color: black;
     font-family: Arial;
 }
-
-.statName{
+.statName {
     margin-right: 10px;
     font-weight: bold;
-    font-size:15pt;
+    font-size: 15pt;
 }
-
-.statDesc{
-    font-size:13pt;
+.statDesc {
+    font-size: 13pt;
 }
-
 /* Style of tooltips */
+
 .tooltip {
     position: absolute;
     background: white;
