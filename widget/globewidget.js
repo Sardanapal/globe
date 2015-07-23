@@ -14,12 +14,12 @@ DAT.Globe = function (container, options) {
 
     var RegionsData = [
         {full: "Europe", short:"EU", loc: [47.97, 16.097]},
-        {full: "Korea", short:"KR", loc: [38.199, 127.204]},
-        {full: "North America", short:"NA", loc: [52.279184, -103.289827]},
+        {full: "Korea", short:"KR", loc: [35.8615124,127.096405]},
+        {full: "North America", short:"NA", loc: [37.6,-95.665]},
         {full: "North China", short:"CN_N", loc: [39.956174, 104.110969]},
         {full: "South China", short:"CN_S", loc: [27.425535, 106.923469]},
-        {full: "Russia", short:"RU", loc: [60.959843, 58.232063]},
-        {full: "South-East Asia", short:"SEA", loc: [17.324551, 114.965461]}
+        {full: "Russia", short:"RU", loc: [55.749792,37.6324949]},
+        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128]}
     ];
 
     var Shaders = {
@@ -83,7 +83,7 @@ DAT.Globe = function (container, options) {
     var PI_HALF = Math.PI / 2;
 
     var controlPanel = new function () {
-        this.AutoRotation = (options.autoRotation == undefined || options.autoRotation) ? 0.003: 0.00;
+        this.AutoRotation = (options.autoRotation == undefined || options.autoRotation) ? true: false;
         this.StarsVisible = (options.starsVisible == undefined || options.starsVisible) ? true : false;
         this.DayMode = (options.dayMode !== undefined && options.dayMode == false) ? false : true;
         this.ShowTooltip = (options.showTooltip !== undefined && options.showTooltip == false) ? false : true;
@@ -100,6 +100,8 @@ DAT.Globe = function (container, options) {
 
         w = container.offsetWidth || window.innerWidth;
         h = container.offsetHeight || window.innerHeight;
+
+        addControlPanel();
 
         scene = new THREE.Scene();
         camera = createCamera(w, h, distance);
@@ -126,8 +128,6 @@ DAT.Globe = function (container, options) {
 
         raycaster = new THREE.Raycaster();
 
-        addControlPanel();
-
         barTooltip = createTooltip(container);
         createMarkersPattern(container);
         createStatisticTable(container);
@@ -138,7 +138,7 @@ DAT.Globe = function (container, options) {
 
         document.addEventListener('keydown', onDocumentKeyDown, false);
 
-        //window.addEventListener('resize', onWindowResize, false);
+        window.addEventListener('resize', onWindowResize, false);
 
         container.addEventListener('mouseover', function () {
             overRenderer = true;
@@ -261,27 +261,28 @@ DAT.Globe = function (container, options) {
         var gui = new dat.GUI();
         gui.close();
 
-        var controller = gui.add(controlPanel, 'AutoRotation', {
-            Off: 0,
-            Slow: 0.003,
-            Middle: 0.025,
-            Fast: 0.05
-        }).listen();
+        /*$(gui.domElement).find(".close-button").click(function(){
+            gui.save();
+        });*/
 
-        controller = gui.add(controlPanel, 'StarsVisible');
+        gui.remember(controlPanel);
+
+        var controller = gui.add(controlPanel, 'AutoRotation').listen();
+
+        controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
             controlPanel.StarsVisible ? scene.add(stars) : scene.remove(stars);
         });
 
-        controller = gui.add(controlPanel, 'DayMode');
+        controller = gui.add(controlPanel, 'DayMode').listen();
         controller.onChange(function (value) {
             var skinFileName = controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg";
             setEarthSkin(skinFileName);
         });
 
-        controller = gui.add(controlPanel, 'ShowTooltip');
-        controller = gui.add(controlPanel, 'ShowStatistic');
-        controller = gui.add(controlPanel, 'ShowStatTable');
+        controller = gui.add(controlPanel, 'ShowTooltip').listen();
+        controller = gui.add(controlPanel, 'ShowStatistic').listen();
+        controller = gui.add(controlPanel, 'ShowStatTable').listen();
         controller.onChange(function (value) {
             $("#stat_table").toggle();
         });
@@ -290,7 +291,7 @@ DAT.Globe = function (container, options) {
             controller.domElement.childNodes[0].disabled = disable;
         };
 
-        var tweetColorController = gui.addColor(controlPanel, "TweetColor");
+        var tweetColorController = gui.addColor(controlPanel, "TweetColor").listen();
         tweetColorController.onChange(function (value) {
             for (var i = 0; i < tweetContainer.children.length; i++) {
                 var mesh = tweetContainer.children[i];
@@ -298,7 +299,7 @@ DAT.Globe = function (container, options) {
             }
         });
 
-        var barColorController = gui.addColor(controlPanel, "BarColor");
+        var barColorController = gui.addColor(controlPanel, "BarColor").listen();
         barColorController.onChange(function (value) {
             for (var i = 0; i < barContainer.children.length; i++) {
                 var mesh = barContainer.children[i];
@@ -369,6 +370,46 @@ DAT.Globe = function (container, options) {
         });
     };
 
+    function getRegion(regionArr, regionName){
+        var region;
+
+        if(regionName == "All"){
+            // get top 10 battles by all regions
+            regionArr = JSON.parse(JSON.stringify(regionArr));
+
+            region = regionArr.shift();
+            regionArr.forEach(function(reg){
+                region.cities = region.cities.concat(reg.cities);
+            });
+
+            region.cities.sort(function(a, b){
+                if(+a.battles > +b.battles){
+                    return -1;
+                } else if(+a.battles < +b.battles){
+                    return 1;
+                }
+                return 0;
+            });
+
+            region.cities = region.cities.slice(0, 10);
+
+        } else {
+            var regionRef = findRegionInRef(regionName, "full");
+            if (regionRef == null) {
+                return;
+            }
+
+            for (var i = 0; i < regionArr.length; i++) {
+                if (regionRef.short == regionArr[i].region) {
+                    region = regionArr[i];
+                    break;
+                }
+            }
+        }
+
+        return region;
+    }
+
     function drawGameStatistic(jsonObj, regionName) {
         controlPanel.disableStatTable(false);
         if(controlPanel.ShowStatTable){
@@ -380,20 +421,8 @@ DAT.Globe = function (container, options) {
             return;
         }
 
-        var regionArr = jsonObj._items[0].regions;
+        var region = getRegion(jsonObj._items[0].regions, regionName);
 
-        var regionRef = findRegionInRef(regionName, "full");
-        if(regionRef == null){
-            return;
-        }
-
-        var region;
-        for (var i = 0; i < regionArr.length; i++) {
-            if (regionRef.short == regionArr[i].region) {
-                region = regionArr[i];
-                break;
-            }
-        }
         if (region == undefined || region.cities == undefined) {
             return;
         }
@@ -424,7 +453,7 @@ DAT.Globe = function (container, options) {
     };
 
     function drawTweets(jsonObj) {
-        var lat, lng, color;
+        var lat, lng;
 
         $("#stat_table").hide();
         controlPanel.disableStatTable(true);
@@ -439,18 +468,22 @@ DAT.Globe = function (container, options) {
         tweets.forEach(function(tweet){
             lat = tweet.loc[0];
             lng = tweet.loc[1];
-            //color = new THREE.Color();
-            //color.setHex(0xAAFF);
 
-            var bulbRadius = 5;
+
+            // create tweet bulbs
+            /*var bulbRadius = 5;
             bulbRadius += 10 * tweet.twit_cnt / maxWeight;
 
-            color = colorFn(bulbRadius/15);
-            addTweetPoint(lat, lng, color, bulbRadius, tweet.city, tweet.twit_cnt);
+            var color = colorFn(bulbRadius/15);
+            addTweetBulb(lat, lng, color, bulbRadius, tweet.city, tweet.twit_cnt);*/
+
+            var perc = +tweet.twit_cnt / maxWeight;
+            var color = colorFn(perc);
+            addTweetBar(lat, lng, perc, color, tweet.city, tweet.twit_cnt);
         });
     };
 
-    function addTweetPoint(lat, lng, color, bulbRadius, city, tweetCnt) {
+    function addTweetBulb(lat, lng, color, bulbRadius, city, tweetCnt) {
         if(controlPanel.TweetColor !== "#000000"){
             color = new THREE.Color(controlPanel.TweetColor);
         }
@@ -475,6 +508,37 @@ DAT.Globe = function (container, options) {
         tweetContainer.add(mesh);
         meshToggle(tweetContainer, mesh, 0.75);
         attachMarker( "<nobr>" + city + "</nobr>", pos, "Tweets: " + tweetCnt);
+    }
+
+    function addTweetBar(lat, lng, perc, color, city, tweetCnt) {
+        var barHeight = Math.max(perc * MAX_BAR_HEIGHT, 1);
+        var barWidth =  Math.max(BAR_WIDTH * 5 * perc, BAR_WIDTH);
+
+        var geometry = new THREE.BoxGeometry(barWidth, barWidth, 1);
+        var meshMaterial = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: BAR_OPACITY});
+
+        var point = new THREE.Mesh(geometry, meshMaterial);
+        point.name = city + " Tweets: " + tweetCnt;
+
+        var coord = calcCoordinates(lat, lng, EARTH_RADIUS);
+        point.position.x = coord.x;
+        point.position.y = coord.y;
+        point.position.z = coord.z;
+
+        point.lookAt(earth.position);
+        point.updateMatrix();
+
+        barContainer.add(point);
+        attachMarker( city, coord, "Tweets: " + tweetCnt);
+
+        var height = {z : 1};
+        var tweenGrow = new TWEEN.Tween(height)
+            .to({z: barHeight}, 2000)
+            .onUpdate(function () {
+                point.scale.z = height.z;
+            });
+
+        tweenGrow.start();
     }
 
     function addPoint(lat, lng, perc, color, region, pccu) {
@@ -552,7 +616,7 @@ DAT.Globe = function (container, options) {
         mesh.updateMatrix();
 
         barContainer.add(mesh);
-        attachMarker( city, coord, "Battles: " + battles, "New players: " + players);
+        attachMarker( city, coord, "Battles: " + battles, "Players: " + players);
 
         meshToggle(barContainer, mesh, BAR_OPACITY);
     }
@@ -703,7 +767,7 @@ DAT.Globe = function (container, options) {
         var coord = calcCoordinates(lat, lng, distance);
 
         globe.rotation.y = globe.rotation.y % ( 2 * Math.PI);
-        controlPanel.AutoRotation = 0.00;
+        controlPanel.AutoRotation = false;
 
         // define globe rotation task to zero point
         var rotationStart = globe.rotation.y;// rotation start point
@@ -744,7 +808,7 @@ DAT.Globe = function (container, options) {
     function render() {
         zoom(curZoomSpeed);
 
-        globe.rotation.y += +controlPanel.AutoRotation;
+        globe.rotation.y += controlPanel.AutoRotation ? 0.003 : 0.0;
 
         rotation.x += (target.x - rotation.x) * 0.2;
         rotation.y += (target.y - rotation.y) * 0.2;

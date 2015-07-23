@@ -26,7 +26,7 @@
 	
 	
 	<div class="top-header">
-		<h1 id="header">ALL REGIONS/PCCU</h3>
+		<h1 id="header">ALL REGIONS/PCCU</h1>
 	</div>
 	
 	<div id="globe-container" class="globe"></div>
@@ -35,27 +35,28 @@
 		<div id="regions">
 			<ul class="panel">
 				<li><h3>REGIONS:</h3></li>
-				<li id="region-all"           class="animation">All Regions</a></li>
-				<li id="region-europe"        class="animation">Europe</li>
-				<li id="region-korea"         class="animation">Korea</li>
-				<li id="region-north-america"  class="animation">North America</li>
-				<li id="region-north-china"    class="animation">North China</li>
-				<li id="region-russia"        class="animation">Russia</li>
-				<li id="region-south-china"    class="animation">South China</li>
-				<li id="region-south-east-asia" class="animation">South-East Asia</li>
+				<li id="region-all"           	class="animation">All Regions</li>
+				<li id="region-europe"        	class="animation">Europe</li>
+				<li id="region-korea"         	class="animation">Korea</li>
+				<li id="region-north-america"  	class="animation">North America</li>
+				<li id="region-north-china"    	class="animation">North China</li>
+				<li id="region-russia"        	class="animation">Russia</li>
+				<li id="region-south-china"    	class="animation">South China</li>
+				<li id="region-south-east-asia"	class="animation">South-East Asia</li>
 			</ul>
 		</div>
 		<div id="statistics">
 			<ul class="panel">
 				<li><h3>DISPLAY:</h3></li>
-				<li id="stat-battles"          class="animation">Battles/Players</a></li>
-				<li id="stat-tweetts"           class="animation">Latest Tweetts</li>
+				<li id="stat-pcu"		class="animation">Peak Concurrent Users</li>
+				<li id="stat-battles"	class="animation">Battles/Players</li>
+				<li id="stat-tweetts"	class="animation">Latest Tweetts</li>
 			</ul>
 		</div>
 		<div id="time-period">
 			<ul class="panel">
 				<li><h3>TIME PERIOD:</h3></li>
-				<li id="time-last-24hrs"          class="animation">Last 24 hrs</a></li>
+				<li id="time-last-24hrs"          class="animation">Last 24 hrs</li>
 			</ul>
 		</div>
 	</div>
@@ -87,6 +88,9 @@
 
 			var curView = "PCU"; // PCU, Tweets, Region
 			var regionName = null;
+
+			var activeRegionsMenuItemID = null;
+			var activeStatMenuItemID = null;
 			
 			function processTweets(jsonObj) {
 				if(jsonObj == undefined || jsonObj._items == undefined) {
@@ -107,11 +111,9 @@
 				$('#twitter-container').vTicker({ 
 					speed: 500,
 					pause: 3000,
-					showItems: 6,
 					animation: 'fade',
 					mousePause: true,
-					height: 0,
-					direction: 'up'
+					height: $(window).height() - 150,
 				});
 	
 				$('#twitter-container').hide();
@@ -180,6 +182,41 @@
 				});
 			}
 
+			function highlightMenuItem(id, isHighlighted)
+			{
+				if (id && typeof id !== "undefined") {
+					if (isHighlighted) {
+						$("#" + id).toggleClass("active");
+					} else {
+						$("#" + id).removeClass("active");
+					}
+				}
+			}
+
+			function disableMenuItem(id, isDisabled)
+			{
+				if (id && typeof id !== "undefined") {
+					if (isDisabled) {
+						$("#" + id).toggleClass("disabled");
+					} else {
+						$("#" + id).removeClass("disabled");
+					}
+				}
+			}
+
+			function disableRegionsMenuItems(isDisabled)
+			{
+				if (isDisabled) {
+					$('#regions').find('ul').children().toggleClass("disabled");
+					$('#regions').find('ul').children().removeClass("animation");
+				} else {
+					$('#regions').find('ul').children().removeClass("disabled");
+					$('#regions').find('ul').children().toggleClass("animation");
+				}
+
+				$('#regions').find('ul').children(":first").removeClass("disabled");
+			}
+
 			$(document).ready(function ($) {
 				requestRegions();
 				requestTweetsLocations();
@@ -190,39 +227,45 @@
 
 				$("#regions").click(function(event) {
 					id = $(event.target).attr("id");
-					if (typeof id !== "undefined") {
-						$( "*" ).removeClass( "active" );
-						$(event.target).toggleClass('active');
+					if (curView == "Region" && typeof id !== "undefined") {
+
+						highlightMenuItem(activeRegionsMenuItemID, false);
+						activeRegionsMenuItemID = id;
+						highlightMenuItem(activeRegionsMenuItemID, true);
+
+						//$(event.target).removeClass('animation');
 
 						globe.removeOldData();
 						globe.removeOldTweets();
 
 						$("#twitter-container").fadeIn();
 						$("#twitter-container").hide();
-					
+
+						curView = "Region";
+
 						switch (id) {
-							case "region-all" : 
-								$("#header").text("ALL REGIONS/PCCU");
-								globe.drawPCUStatistic(ajaxRegions);
-								globe.setCameraToRegion("All");
-								curView = "PCU";
+							case "region-all" :
+								regionName = "All";
+								$("#header").text("ALL REGIONS/BATTLES");
 								break;
 							default :
-								var region = $(event.target).text();
-								$("#header").text(region+"/BATTLES");
-								globe.drawGameStatistic(ajaxRegions, region);
-								globe.setCameraToRegion(region);
-								curView = "Region";
-								regionName = event.target.innerText;
+								regionName = $(event.target).text();
+								$("#header").text(regionName + "/BATTLES");
+								break;
 						}
+
+						globe.drawGameStatistic(ajaxRegions, regionName);
+						globe.setCameraToRegion(regionName);
 					}
 				});
 
 				$("#statistics").click(function(event) {
 					id = $(event.target).attr("id");
 					if (typeof id !== "undefined") {
-						$( "*" ).removeClass( "active" );
-						$(event.target).toggleClass('active');
+
+						highlightMenuItem(activeStatMenuItemID, false);
+						activeStatMenuItemID = id;
+						highlightMenuItem(activeStatMenuItemID, true);
 
 						globe.removeOldData();
 						globe.removeOldTweets();
@@ -231,17 +274,27 @@
 						$("#twitter-container").hide();
 
 						switch (id) {
-							case "stat-battles" :
-								$("#header").text("ALL REGIONS/PCCU");						
+							case "stat-pcu" :
+								$("#header").text("ALL REGIONS/PCCU");
 								globe.drawPCUStatistic(ajaxRegions);
 								globe.setCameraToRegion("All");
 								curView = "PCU";
+								disableRegionsMenuItems(true);
+								break;
+							case "stat-battles" :
+								$("#header").text("ALL REGIONS/BATTLES");
+								var region = "All";
+								globe.drawGameStatistic(ajaxRegions, region);
+								globe.setCameraToRegion(region);
+								curView = "Region";
+								disableRegionsMenuItems(false);
 								break;
 							case "stat-tweetts" : 
 								$("#header").text("ALL REGIONS/TWEETS");
 								globe.drawTweets(ajaxTweetLoc);
 								$("#twitter-container").show();
 								curView = "Tweets";
+								disableRegionsMenuItems(true);
 								break;
 						}
 					}

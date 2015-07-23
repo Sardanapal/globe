@@ -46,17 +46,21 @@
     -webkit-transform: translateX(5px);
 }
 .panel li.active {
-    border-radius: 3px 3px 3px 3px;
-    margin-top: 5px;
-    width: 150px;
     background: #000000;
     background: -moz-linear-gradient(top, #404040 0%, #161616 100%);
     background: -webkit-linear-gradient(top, #404040 0%, #161616 100%);
-    border-left: 2px solid #111;
-    border-top: 2px solid #111;
-    border-right: 2px solid #333;
-    border-bottom: 2px solid #333;
+    background: -o-linear-gradient(top, #404040 0%, #000000 100%);
 }
+
+.panel li.disabled {
+    color: #404040;
+    background: #000000;
+    background: -moz-linear-gradient(top, #161616 0%, #000000 100%);
+    background: -webkit-linear-gradient(top, #161616 0%, #000000 100%);
+    background: -o-linear-gradient(top, #161616 0%, #000000 100%);
+}
+
+
 .panel li a {
     color: #fff;
     display: block;
