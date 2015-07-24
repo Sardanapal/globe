@@ -11,22 +11,23 @@
     <link rel="stylesheet" type="text/css" href="css/menuwidget.css">
     <link rel="stylesheet" type="text/css" href="css/twitterwidget.css">
     <link rel="stylesheet" type="text/css" href="css/globewidget.css">
+	<script type="text/javascript" src="css/globeoptions.js"></script>
 
 	<script type="text/javascript" src="third-party/detector.js"></script>
 	<script type="text/javascript" src="third-party/three.js"></script>
 	<script type="text/javascript" src="third-party/jquery-2.1.4.min.js"></script>
 	<script type="text/javascript" src="third-party/dat.gui.js"></script>
 	<script type="text/javascript" src="third-party/tween.js"></script>
-	<script type="text/javascript" src="third-party/jquery.vticker-min.js"></script>
-	<script type="text/javascript" src="css/globeoptions.js"></script>
+
 	<script type="text/javascript" src="widget/globewidget.js"></script>
+	<script type="text/javascript" src="widget/twitter.vticker.js"></script>
 </head>
 
 <body>
 	
 	
 	<div class="top-header">
-		<h1 id="header">ALL REGIONS/PCCU</h1>
+		<h1 id="header">ALL REGIONS/BATTLES</h1>
 	</div>
 	
 	<div id="globe-container" class="globe"></div>
@@ -50,7 +51,7 @@
 				<li><h3>DISPLAY:</h3></li>
 				<li id="stat-pcu"		class="animation">Peak Concurrent Users</li>
 				<li id="stat-battles"	class="animation">Battles/Players</li>
-				<li id="stat-tweetts"	class="animation">Latest Tweetts</li>
+				<li id="stat-tweetts"	class="animation">Latest Tweets</li>
 			</ul>
 		</div>
 		<div id="time-period">
@@ -86,8 +87,8 @@
 			var ajaxTweetMsg = null;
 			var ajaxTweetLoc = null;
 
-			var curView = "PCU"; // PCU, Tweets, Region
-			var regionName = null;
+			var curView = "Region"; // PCU, Tweets, Region
+			var regionName = "All";
 
 			var activeRegionsMenuItemID = null;
 			var activeStatMenuItemID = null;
@@ -102,21 +103,20 @@
 				var tweets = jsonObj._items;
 
 				tweets.forEach(function(tweet){
+					city = tweet.city;
 					msg = tweet.text;
-					$( "#twitter-items" ).append("<li><blockquote class=\"twitter-tweet\">" + msg + "</blockquote></li>");
-				});
 
-				$('#twitter-container').show();
-		
-				$('#twitter-container').vTicker({ 
-					speed: 500,
-					pause: 3000,
-					animation: 'fade',
-					mousePause: true,
-					height: $(window).height() - 150,
+					latitude = tweet.loc[0];
+					longitude = tweet.loc[1];
+
+					if (city && city.trim().length > 0) {
+						city = city.trim();
+						$("#twitter-items").append("<li lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\"><b>" + city + ": </b>" + msg + "</blockquote></li>");
+					} else {
+						msg = msg.trim();
+						$("#twitter-items").append("<li lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\">" + msg + "</blockquote></li>");
+					}
 				});
-	
-				$('#twitter-container').hide();
 			};
 
 			function requestTweetsMessages() {
@@ -217,6 +217,21 @@
 				$('#regions').find('ul').children(":first").removeClass("disabled");
 			}
 
+			function updateTweetsOpacity()
+			{
+				var ul = jQuery('#twitter-container ul');
+				var interval = 500;
+				ul.children('li:nth-child(1)').animate({opacity: .53}, interval);
+				ul.children('li:nth-child(2)').animate({opacity: .63}, interval);
+				ul.children('li:nth-child(3)').animate({opacity: .73}, interval);
+				ul.children('li:nth-child(4)').animate({opacity: .83}, interval);
+				ul.children('li:nth-child(5)').animate({opacity: 1}, interval);
+				ul.children('li:nth-child(6)').animate({opacity: .83}, interval);
+				ul.children('li:nth-child(7)').animate({opacity: .73}, interval);
+				ul.children('li:nth-child(8)').animate({opacity: .63}, interval);
+				ul.children('li:nth-child(9)').animate({opacity: .0}, interval);
+			}
+
 			$(document).ready(function ($) {
 				requestRegions();
 				requestTweetsLocations();
@@ -237,6 +252,7 @@
 
 						globe.removeOldData();
 						globe.removeOldTweets();
+						globe.stopCycling();
 
 						$("#twitter-container").fadeIn();
 						$("#twitter-container").hide();
@@ -269,7 +285,9 @@
 
 						globe.removeOldData();
 						globe.removeOldTweets();
-					
+						globe.stopCycling();
+
+						$('#twitter-container').vTicker('stop');
 						$("#twitter-container").fadeIn();
 						$("#twitter-container").hide();
 
@@ -292,7 +310,28 @@
 							case "stat-tweetts" : 
 								$("#header").text("ALL REGIONS/TWEETS");
 								globe.drawTweets(ajaxTweetLoc);
+								globe.setCameraToRegion("All");
+
+								updateTweetsOpacity();
 								$("#twitter-container").show();
+
+								$('#twitter-container').vTicker({
+									speed: 500,
+									pause: 4000,
+									animation: 'fade',
+									showItems: 7,
+									mousePause: true,
+									height: $(window).height() - 150
+								});
+
+								$('#twitter-container').on('vticker.beforeTick', function() {
+									updateTweetsOpacity();
+									var ul = jQuery('#twitter-container ul');
+									lat = ul.children('li:nth-child(5)').attr("lat");
+									long = ul.children('li:nth-child(5)').attr("long");
+									globe.setCameraToPoint(lat, long, 3000);
+								});
+
 								curView = "Tweets";
 								disableRegionsMenuItems(true);
 								break;

@@ -12,7 +12,7 @@ DAT.Globe = function (container, options) {
             return c;
         };
 
-    var RegionsData = [
+    var RegionsRef = [
         {full: "Europe", short:"EU", loc: [47.97, 16.097]},
         {full: "Korea", short:"KR", loc: [35.8615124,127.096405]},
         {full: "North America", short:"NA", loc: [37.6,-95.665]},
@@ -82,8 +82,11 @@ DAT.Globe = function (container, options) {
     var distance = 100000, distanceTarget = 100000;
     var PI_HALF = Math.PI / 2;
 
+    var regionData;
+
     var controlPanel = new function () {
         this.AutoRotation = (options.autoRotation == undefined || options.autoRotation) ? true: false;
+        this.RegionsAutoCycle = (options.regionsAutoCycle == undefined || !options.regionsAutoCycle) ? false: true;
         this.StarsVisible = (options.starsVisible == undefined || options.starsVisible) ? true : false;
         this.DayMode = (options.dayMode !== undefined && options.dayMode == false) ? false : true;
         this.ShowTooltip = (options.showTooltip !== undefined && options.showTooltip == false) ? false : true;
@@ -157,6 +160,12 @@ DAT.Globe = function (container, options) {
 
         // run markers switching thread
         setInterval(switchOverMarkers, 2000);
+
+        RegionsRef.nextRegion = 0;
+        if(controlPanel.RegionsAutoCycle){
+            cycleRegions();
+            cycleRegions.threadId = setInterval(cycleRegions, 10000);
+        }
     }
 
     function createCamera(width, height, distance) {
@@ -257,17 +266,44 @@ DAT.Globe = function (container, options) {
         earth.updateMorphTargets();
     }
 
+    function cycleRegions() {
+        var region = RegionsRef[RegionsRef.nextRegion];
+
+        removeOldData();
+        removeOldTweets();
+        drawGameStatistic(regionData, region.full);
+        setCameraToRegion(region.full);
+        RegionsRef.nextRegion++;
+        if (RegionsRef.nextRegion >= RegionsRef.length) {
+            RegionsRef.nextRegion = 0;
+        }
+    };
+
     function addControlPanel() {
         var gui = new dat.GUI();
         gui.close();
 
-        /*$(gui.domElement).find(".close-button").click(function(){
-            gui.save();
-        });*/
-
         gui.remember(controlPanel);
 
         var controller = gui.add(controlPanel, 'AutoRotation').listen();
+
+        controller = gui.add(controlPanel, 'RegionsAutoCycle').listen();
+        controller.onChange(function (on) {
+            if(on) {
+                cycleRegions();
+                cycleRegions.threadId = setInterval(cycleRegions, 15000);
+            } else {
+                clearInterval(cycleRegions.threadId);
+                cycleRegions.threadId = 0;
+            }
+        });
+        controlPanel.hideRegionCyclingOption = (function(element){
+            var checkBox = element;
+
+            return function(disable) {
+                checkBox.disabled = disable;
+            };
+        })(controller.domElement.childNodes[0]);
 
         controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
@@ -287,9 +323,13 @@ DAT.Globe = function (container, options) {
             $("#stat_table").toggle();
         });
 
-        controlPanel.disableStatTable = function(disable){
-            controller.domElement.childNodes[0].disabled = disable;
-        };
+        controlPanel.hideStatTableOption = (function(element){
+            var checkBox = element;
+
+            return function(disable) {
+                checkBox.disabled = disable;
+            };
+        })(controller.domElement.childNodes[0]);
 
         var tweetColorController = gui.addColor(controlPanel, "TweetColor").listen();
         tweetColorController.onChange(function (value) {
@@ -328,10 +368,10 @@ DAT.Globe = function (container, options) {
     }
 
     function findRegionInRef(name, type){
-        for(var i = 0; i < RegionsData.length; i++){
-            var regionRef = RegionsData[i];
-            if(name == (type == "full" ? regionRef.full : regionRef.short)){
-                return regionRef;
+        for(var i = 0; i < RegionsRef.length; i++){
+            var curRegion = RegionsRef[i];
+            if(name == (type == "full" ? curRegion.full : curRegion.short)){
+                return curRegion;
             }
         }
         return null;
@@ -340,7 +380,7 @@ DAT.Globe = function (container, options) {
     function drawPCUStatistic(jsonObj) {
         var lat, lng, perc, color;
 
-        controlPanel.disableStatTable(false);
+        controlPanel.hideStatTableOption(false);
         if(controlPanel.ShowStatTable){
             $("#stat_table").show();
         }
@@ -350,23 +390,25 @@ DAT.Globe = function (container, options) {
             return;
         }
 
+        regionData = jsonObj;
+
         var regions = jsonObj._items[0].regions;
         var maxPCU = getMax(regions, "pccu");
 
         markers.fixed = true; // always show them if visible
 
         regions.forEach(function(region){
-            var regionRef = findRegionInRef(region.region, "short");
-            if(regionRef == null){
+            var curRegion = findRegionInRef(region.region, "short");
+            if(curRegion == null){
                 return;
             }
-            var coord = regionRef.loc;
+            var coord = curRegion.loc;
 
             lat = coord[0];
             lng = coord[1];
             color = colorFn(region.pccu/maxPCU);
             perc = +region.pccu / maxPCU;
-            addPoint(lat, lng, perc, color, regionRef.full, region.pccu);
+            addPoint(lat, lng, perc, color, curRegion.full, region.pccu);
         });
     };
 
@@ -374,7 +416,7 @@ DAT.Globe = function (container, options) {
         var region;
 
         if(regionName == "All"){
-            // get top 10 battles by all regions
+            // get top 50 battles by all regions
             regionArr = JSON.parse(JSON.stringify(regionArr));
 
             region = regionArr.shift();
@@ -391,16 +433,16 @@ DAT.Globe = function (container, options) {
                 return 0;
             });
 
-            region.cities = region.cities.slice(0, 10);
+            region.cities = region.cities.slice(0, 50);
 
         } else {
-            var regionRef = findRegionInRef(regionName, "full");
-            if (regionRef == null) {
+            var curRegion = findRegionInRef(regionName, "full");
+            if (curRegion == null) {
                 return;
             }
 
             for (var i = 0; i < regionArr.length; i++) {
-                if (regionRef.short == regionArr[i].region) {
+                if (curRegion.short == regionArr[i].region) {
                     region = regionArr[i];
                     break;
                 }
@@ -411,7 +453,7 @@ DAT.Globe = function (container, options) {
     }
 
     function drawGameStatistic(jsonObj, regionName) {
-        controlPanel.disableStatTable(false);
+        controlPanel.hideStatTableOption(false);
         if(controlPanel.ShowStatTable){
             $("#stat_table").show();
         }
@@ -420,6 +462,8 @@ DAT.Globe = function (container, options) {
             jsonObj._items[0].regions == undefined){
             return;
         }
+
+        regionData = jsonObj;
 
         var region = getRegion(jsonObj._items[0].regions, regionName);
 
@@ -456,7 +500,8 @@ DAT.Globe = function (container, options) {
         var lat, lng;
 
         $("#stat_table").hide();
-        controlPanel.disableStatTable(true);
+        controlPanel.hideStatTableOption(true);
+        controlPanel.hideRegionCyclingOption(true);
 
         if(jsonObj == undefined || jsonObj._items == undefined){
             return;
@@ -763,7 +808,8 @@ DAT.Globe = function (container, options) {
         });
     }
 
-    function setCameraToPoint(lat, lng) {
+    function setCameraToPoint(lat, lng, time) {
+        var time = time || 2000;
         var coord = calcCoordinates(lat, lng, distance);
 
         globe.rotation.y = globe.rotation.y % ( 2 * Math.PI);
@@ -785,7 +831,7 @@ DAT.Globe = function (container, options) {
 
         // rotation task
         var tweenSetPoint = new TWEEN.Tween(oldTarget)
-            .to(newTarget, 2000)
+            .to(newTarget, time)
             .onUpdate(function () {
                 target.x = oldTarget.x;
                 target.y = oldTarget.y;
@@ -882,6 +928,15 @@ DAT.Globe = function (container, options) {
         $('#stat_table').empty();
     }
 
+    function stopCycling(){
+        controlPanel.RegionsAutoCycle = false;
+        if(cycleRegions.threadId != 0) {
+            clearInterval(cycleRegions.threadId);
+            cycleRegions.threadId = 0;
+        }
+        controlPanel.hideRegionCyclingOption(false);
+    }
+
     function attachMarker( title, position, text1, text2 ){
         var container = $("#visualization")
         var template = $(".marker:first");
@@ -951,6 +1006,10 @@ DAT.Globe = function (container, options) {
     }
 
     function addRowToStatTable(title, text1, text2){
+        if($('#stat_table tr').length >= 10){
+            return;
+        }
+
         var table = $('#stat_table');
         var rowTemplate = '<tr width="100px">'+
             '<td><span class="statName"></span></td>' +
@@ -1029,6 +1088,7 @@ DAT.Globe = function (container, options) {
     this.drawTweets = drawTweets;
     this.removeOldTweets = removeOldTweets;
     this.removeOldData = removeOldData;
+    this.stopCycling = stopCycling;
     this.setCameraToPoint = setCameraToPoint;
     this.setCameraToRegion = setCameraToRegion;
 
