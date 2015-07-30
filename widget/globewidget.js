@@ -50,7 +50,7 @@ DAT.Globe = function (container, options) {
         }
     };
 
-    var EARTH_RADIUS = 150;
+    var EARTH_RADIUS = 250;
     var BAR_WIDTH = 2.75;
     var BAR_OPACITY = 0.8;
     var MAX_BAR_HEIGHT = 250;
@@ -122,11 +122,10 @@ DAT.Globe = function (container, options) {
         scene.add(globe);
         scene.updateMatrixWorld(true);
 
-        /*stars = createStars(1000, 64);
+        stars = createStars(1000, 64);
         if(controlPanel.StarsVisible) {
             scene.add(stars);
-        }*/
-        //$(container).css("background-image", "url('image/galaxy_starfield.png')");
+        }
 
         renderer = createRenderer(w, h);
 
@@ -306,10 +305,10 @@ DAT.Globe = function (container, options) {
             };
         })(controller.domElement.childNodes[0]);
 
-        /*controller = gui.add(controlPanel, 'StarsVisible').listen();
+        controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
             controlPanel.StarsVisible ? scene.add(stars) : scene.remove(stars);
-        });*/
+        });
 
         controller = gui.add(controlPanel, 'DayMode').listen();
         controller.onChange(function (value) {
@@ -329,7 +328,7 @@ DAT.Globe = function (container, options) {
 
             return function(disable) {
                 checkBox.disabled = disable;
-            };
+        };
         })(controller.domElement.childNodes[0]);
 
         var tweetColorController = gui.addColor(controlPanel, "TweetColor").listen();
@@ -354,13 +353,17 @@ DAT.Globe = function (container, options) {
     }
 
     function getMax(array, fieldName){
-        var max = +array[0][fieldName];
-        for(var i = 1; i < array.length; i++){
-            if(max < +array[i][fieldName]){
-                max = +array[i][fieldName];
-            }
-        }
-        return max;
+	var max = 0;
+        if (typeof array != 'undefined' && array.length > 0) 
+	{	
+          max = +array[0][fieldName];
+          for(var i = 1; i < array.length; i++){
+              if(max < +array[i][fieldName]){
+                  max = +array[i][fieldName];
+              }
+          }
+	}
+       return max;
     }
 
     // calc bar height by percents from max
@@ -511,6 +514,8 @@ DAT.Globe = function (container, options) {
         var tweets = jsonObj._items;
         var maxWeight = getMax(tweets, "twit_cnt");
 
+        markers.fixed = true;
+
         tweets.forEach(function(tweet){
             lat = tweet.loc[0];
             lng = tweet.loc[1];
@@ -553,7 +558,8 @@ DAT.Globe = function (container, options) {
 
         tweetContainer.add(mesh);
         meshToggle(tweetContainer, mesh, 0.75);
-        attachMarker( "<nobr>" + city + "</nobr>", pos, "Tweets: " + tweetCnt);
+
+        attachMarker( "<nobr>" + city + "</nobr>", coord, "Tweets: " + tweetCnt);
     }
 
     function addTweetBar(lat, lng, perc, color, city, tweetCnt) {
@@ -575,7 +581,12 @@ DAT.Globe = function (container, options) {
         point.updateMatrix();
 
         barContainer.add(point);
-        attachMarker( city, coord, "Tweets: " + tweetCnt);
+
+        var zoffset = 1 + (tweetCnt * 0.15) + Math.random() * 0.15;
+        if (zoffset > 1.5) zoffset = 1.5;
+        var coord1 = calcCoordinates(lat, lng, zoffset * EARTH_RADIUS);
+
+        attachMarker( city, coord1, "Tweets: " + tweetCnt);
 
         var height = {z : 1};
         var tweenGrow = new TWEEN.Tween(height)
@@ -609,7 +620,9 @@ DAT.Globe = function (container, options) {
         point.updateMatrix();
 
         barContainer.add(point);
-        attachMarker( region, coord, "PCCU: " + pccu);
+
+        var coord1 = calcCoordinates(lat, lng, 1.15 * EARTH_RADIUS);
+        attachMarker( region, coord1, "PCCU: " + pccu);
 
         var height = {z : 1};
         var tweenGrow = new TWEEN.Tween(height)
@@ -662,7 +675,9 @@ DAT.Globe = function (container, options) {
         mesh.updateMatrix();
 
         barContainer.add(mesh);
-        attachMarker( city, coord, "Battles: " + battles, "Players: " + players);
+
+        var coord1 = calcCoordinates(lat, lng, 1.15 * EARTH_RADIUS);
+        attachMarker( city, coord1, "Battles: " + battles, "Players: " + players);
 
         meshToggle(barContainer, mesh, BAR_OPACITY);
     }
@@ -809,8 +824,7 @@ DAT.Globe = function (container, options) {
         });
     }
 
-    function setCameraToPoint(lat, lng, time) {
-        var time = time || 2000;
+    function setCameraToPoint(lat, lng) {
         var coord = calcCoordinates(lat, lng, distance);
 
         globe.rotation.y = globe.rotation.y % ( 2 * Math.PI);
@@ -830,15 +844,18 @@ DAT.Globe = function (container, options) {
         newTarget.x = Math.asin(coord.x / distance / Math.cos(newTarget.y)) + (lng < 0 ? Math.PI : 0);
         newTarget.z = rotationEnd;
 
+        var dist = newTarget.distanceTo(oldTarget);
+	
         // rotation task
         var tweenSetPoint = new TWEEN.Tween(oldTarget)
-            .to(newTarget, time)
+            .to(newTarget, dist * 1000)
             .onUpdate(function () {
                 target.x = oldTarget.x;
                 target.y = oldTarget.y;
                 globe.rotation.y = oldTarget.z;
             });
 
+	/*
         // zoom task
         var oldDistance = {x: distanceTarget};
         var tweenSetZoom = new TWEEN.Tween(oldDistance)
@@ -846,8 +863,10 @@ DAT.Globe = function (container, options) {
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
             });
+        
 
         tweenSetPoint.chain(tweenSetZoom);
+	*/
         tweenSetPoint.start();
     }
 
@@ -938,6 +957,12 @@ DAT.Globe = function (container, options) {
         controlPanel.hideRegionCyclingOption(false);
     }
 
+    function attachGeoMarker( title, lat, lng, text1, text2 ) {
+        removeMarkers();
+        var coord = calcCoordinates(lat, lng, EARTH_RADIUS);
+        attachMarker( title, coord, text1, text2 )
+    }
+
     function attachMarker( title, position, text1, text2 ){
         var container = $("#visualization")
         var template = $(".marker:first");
@@ -983,7 +1008,7 @@ DAT.Globe = function (container, options) {
             var distToBar = camPosition.distanceTo(abspos);
 
             var remoteness = distToBar / distToCenter * 100;
-            this.setVisible(remoteness < 95); // nearer 95% from globe center
+            this.setVisible(remoteness < 85); // nearer 95% from globe center
 
             this.setSize( 100 - remoteness );
 
@@ -1092,6 +1117,7 @@ DAT.Globe = function (container, options) {
     this.stopCycling = stopCycling;
     this.setCameraToPoint = setCameraToPoint;
     this.setCameraToRegion = setCameraToRegion;
+    this.attachGeoMarker = attachGeoMarker;
 
     return this;
 };
