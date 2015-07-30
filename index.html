@@ -330,8 +330,9 @@
 							case "stat-battles" :
 								$("#header").text("ALL REGIONS/BATTLES");
 								var region = "All";
-								globe.drawGameStatistic(ajaxRegions, region);
-								globe.setCameraToRegion(region);
+								//globe.drawGameStatistic(ajaxRegions, region);
+								globe.runCycling(ajaxRegions);
+								//globe.setCameraToRegion(region);
 								curView = "Region";
 								disableRegionsMenuItems(false);
 								break;

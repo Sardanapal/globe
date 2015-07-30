@@ -122,10 +122,10 @@ DAT.Globe = function (container, options) {
         scene.add(globe);
         scene.updateMatrixWorld(true);
 
-        stars = createStars(1000, 64);
+        /*stars = createStars(1000, 64);
         if(controlPanel.StarsVisible) {
             scene.add(stars);
-        }
+        }*/
 
         renderer = createRenderer(w, h);
 
@@ -279,6 +279,16 @@ DAT.Globe = function (container, options) {
         }
     };
 
+    function regionsCycleOn(){
+        cycleRegions();
+        cycleRegions.threadId = setInterval(cycleRegions, 15000);
+    }
+
+    function regionsCycleOff(){
+        clearInterval(cycleRegions.threadId);
+        cycleRegions.threadId = 0;
+    }
+
     function addControlPanel() {
         var gui = new dat.GUI();
         gui.close();
@@ -290,11 +300,9 @@ DAT.Globe = function (container, options) {
         controller = gui.add(controlPanel, 'RegionsAutoCycle').listen();
         controller.onChange(function (on) {
             if(on) {
-                cycleRegions();
-                cycleRegions.threadId = setInterval(cycleRegions, 15000);
+                regionsCycleOn();
             } else {
-                clearInterval(cycleRegions.threadId);
-                cycleRegions.threadId = 0;
+                regionsCycleOff();
             }
         });
         controlPanel.hideRegionCyclingOption = (function(element){
@@ -352,18 +360,17 @@ DAT.Globe = function (container, options) {
         });
     }
 
-    function getMax(array, fieldName){
-	var max = 0;
-        if (typeof array != 'undefined' && array.length > 0) 
-	{	
-          max = +array[0][fieldName];
-          for(var i = 1; i < array.length; i++){
-              if(max < +array[i][fieldName]){
-                  max = +array[i][fieldName];
-              }
-          }
-	}
-       return max;
+    function getMax(array, fieldName) {
+        var max = 0;
+        if (typeof array != 'undefined' && array.length > 0) {
+            max = +array[0][fieldName];
+            for (var i = 1; i < array.length; i++) {
+                if (max < +array[i][fieldName]) {
+                    max = +array[i][fieldName];
+                }
+            }
+        }
+        return max;
     }
 
     // calc bar height by percents from max
@@ -384,6 +391,7 @@ DAT.Globe = function (container, options) {
     function drawPCUStatistic(jsonObj) {
         var lat, lng, perc, color;
 
+        controlPanel.hideRegionCyclingOption(true);
         controlPanel.hideStatTableOption(false);
         if(controlPanel.ShowStatTable){
             $("#stat_table").show();
@@ -948,11 +956,23 @@ DAT.Globe = function (container, options) {
         $('#stat_table').empty();
     }
 
+    function runCycling(jsonObj){
+        if(jsonObj == undefined || jsonObj._items == undefined || jsonObj._items[0] == undefined ||
+            jsonObj._items[0].regions == undefined){
+            return;
+        }
+
+        regionData = jsonObj;
+
+        controlPanel.hideRegionCyclingOption(false);
+        controlPanel.RegionsAutoCycle = true;
+        regionsCycleOn();
+    }
+
     function stopCycling(){
         controlPanel.RegionsAutoCycle = false;
         if(cycleRegions.threadId != 0) {
-            clearInterval(cycleRegions.threadId);
-            cycleRegions.threadId = 0;
+            regionsCycleOff();
         }
         controlPanel.hideRegionCyclingOption(false);
     }
@@ -1114,6 +1134,7 @@ DAT.Globe = function (container, options) {
     this.drawTweets = drawTweets;
     this.removeOldTweets = removeOldTweets;
     this.removeOldData = removeOldData;
+    this.runCycling = runCycling;
     this.stopCycling = stopCycling;
     this.setCameraToPoint = setCameraToPoint;
     this.setCameraToRegion = setCameraToRegion;
