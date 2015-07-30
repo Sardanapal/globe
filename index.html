@@ -270,7 +270,6 @@
 				requestTweetsMessages();
 				
 				globe.animate();
-				document.body.style.backgroundImage = 'none';
 
 				$("#regions").click(function(event) {
 					id = $(event.target).attr("id");
@@ -350,7 +349,7 @@
 									animation: 'fade',
 									showItems: 7,
 									mousePause: true,
-									height: $(window).height() - 150,
+									height: $(window).height() - 150
 								});
 
 								$('#twitter-container').on('vticker.beforeTick', function() {

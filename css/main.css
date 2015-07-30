@@ -5,8 +5,7 @@ html {
 body {
     margin: 0;
     padding: 0;
-    /*background: #000000 url(image/loading.gif) center center no-repeat;*/
-    background: #000000 url(../image/starfield.jpg) repeat;
+    background: #000000 url(../image/loading.gif) center center no-repeat;
     color: #ffffff;
     font-family: sans-serif;
     font-size: 13px;

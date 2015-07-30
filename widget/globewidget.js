@@ -122,10 +122,9 @@ DAT.Globe = function (container, options) {
         scene.add(globe);
         scene.updateMatrixWorld(true);
 
-        /*stars = createStars(1000, 64);
         if(controlPanel.StarsVisible) {
-            scene.add(stars);
-        }*/
+            $("body").css("background", "#000000 url(image/starfield.jpg) repeat");
+        }
 
         renderer = createRenderer(w, h);
 
@@ -175,8 +174,10 @@ DAT.Globe = function (container, options) {
     }
 
     function createRenderer(width, height) {
-        var renderer = new THREE.WebGLRenderer({antialias: true});
+        var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
         renderer.setSize(w, h);
+        renderer.autoClear = false;
+        renderer.setClearColor(0x000000, 0.0);
         renderer.domElement.style.position = 'absolute';
         return renderer;
     }
@@ -315,7 +316,7 @@ DAT.Globe = function (container, options) {
 
         controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
-            controlPanel.StarsVisible ? scene.add(stars) : scene.remove(stars);
+            $("body").css("background", controlPanel.StarsVisible ? "#000000 url(image/starfield.jpg) repeat" : "#000000");
         });
 
         controller = gui.add(controlPanel, 'DayMode').listen();
