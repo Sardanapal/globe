@@ -92,7 +92,31 @@
 
 			var activeRegionsMenuItemID = null;
 			var activeStatMenuItemID = null;
-			
+
+			function getTweetsInCity(city) {
+				if (ajaxTweetLoc) {
+					arr = ajaxTweetLoc._items.filter(
+							function (data) {
+								return data.city == city
+							}
+					);
+
+					if (arr && arr.length > 0) {
+						return arr[0].twit_cnt;
+					}
+				}
+
+				return 0;
+			}
+
+			Array.prototype.removeValue = function(name, value){
+				var array = $.map(this, function(v,i){
+					return v[name] === value ? null : v;
+				});
+				this.length = 0; //clear original array
+				this.push.apply(this, array); //push all elements except the one we want to delete
+			}
+
 			function processTweets(jsonObj) {
 				if(jsonObj == undefined || jsonObj._items == undefined) {
 					return;
@@ -111,7 +135,7 @@
 
 					if (city && city.trim().length > 0) {
 						city = city.trim();
-						$("#twitter-items").append("<li lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\"><b>" + city + ": </b>" + msg + "</blockquote></li>");
+						$("#twitter-items").append("<li city = \"" + city + "\" lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\"><b>" + city + ": </b>" + msg + "</blockquote></li>");
 					} else {
 						msg = msg.trim();
 						$("#twitter-items").append("<li lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\">" + msg + "</blockquote></li>");
@@ -131,6 +155,8 @@
 						return true;
 					},
 					success: function (msg) {
+						msg._items.removeValue("city", " ");
+
 						ajaxTweetMsg = msg;
 						processTweets(ajaxTweetMsg);
 					}
@@ -149,6 +175,8 @@
 						return true;
 					},
 					success: function (msg) {
+						msg._items.removeValue("city", " ");
+
 						ajaxTweetLoc = msg;
 						globe.removeOldTweets();
 						
@@ -171,6 +199,8 @@
 						return true;
 					},
 					success: function (msg) {
+						msg._items.removeValue("country", "N/D");
+
 						ajaxRegions = msg;
 						globe.removeOldData();
 						if(curView == "PCU") {
@@ -186,7 +216,7 @@
 			{
 				if (id && typeof id !== "undefined") {
 					if (isHighlighted) {
-						$("#" + id).toggleClass("active");
+						$("#" + id).addClass("active");
 					} else {
 						$("#" + id).removeClass("active");
 					}
@@ -197,7 +227,7 @@
 			{
 				if (id && typeof id !== "undefined") {
 					if (isDisabled) {
-						$("#" + id).toggleClass("disabled");
+						$("#" + id).addClass("disabled");
 					} else {
 						$("#" + id).removeClass("disabled");
 					}
@@ -207,11 +237,11 @@
 			function disableRegionsMenuItems(isDisabled)
 			{
 				if (isDisabled) {
-					$('#regions').find('ul').children().toggleClass("disabled");
+					$('#regions').find('ul').children().addClass("disabled");
 					$('#regions').find('ul').children().removeClass("animation");
 				} else {
 					$('#regions').find('ul').children().removeClass("disabled");
-					$('#regions').find('ul').children().toggleClass("animation");
+					$('#regions').find('ul').children().addClass("animation");
 				}
 
 				$('#regions').find('ul').children(":first").removeClass("disabled");
@@ -220,16 +250,18 @@
 			function updateTweetsOpacity()
 			{
 				var ul = jQuery('#twitter-container ul');
+
+				ul.children().css({opacity: .73});
+				ul.children('li:nth-child(2)').css({opacity: 1});
+			}
+
+			function updateTweetsActiveRow()
+			{
+				var ul = jQuery('#twitter-container ul');
+
 				var interval = 500;
-				ul.children('li:nth-child(1)').animate({opacity: .53}, interval);
-				ul.children('li:nth-child(2)').animate({opacity: .63}, interval);
-				ul.children('li:nth-child(3)').animate({opacity: .73}, interval);
-				ul.children('li:nth-child(4)').animate({opacity: .83}, interval);
-				ul.children('li:nth-child(5)').animate({opacity: 1}, interval);
-				ul.children('li:nth-child(6)').animate({opacity: .83}, interval);
-				ul.children('li:nth-child(7)').animate({opacity: .73}, interval);
-				ul.children('li:nth-child(8)').animate({opacity: .63}, interval);
-				ul.children('li:nth-child(9)').animate({opacity: .0}, interval);
+				ul.children('li:nth-child(1)').animate({opacity: .73}, interval);
+				ul.children('li:nth-child(2)').animate({opacity: 1}, interval);
 			}
 
 			$(document).ready(function ($) {
@@ -248,16 +280,9 @@
 						activeRegionsMenuItemID = id;
 						highlightMenuItem(activeRegionsMenuItemID, true);
 
-						//$(event.target).removeClass('animation');
-
 						globe.removeOldData();
 						globe.removeOldTweets();
 						globe.stopCycling();
-
-						$("#twitter-container").fadeIn();
-						$("#twitter-container").hide();
-
-						curView = "Region";
 
 						switch (id) {
 							case "region-all" :
@@ -287,9 +312,12 @@
 						globe.removeOldTweets();
 						globe.stopCycling();
 
-						$('#twitter-container').vTicker('stop');
-						$("#twitter-container").fadeIn();
-						$("#twitter-container").hide();
+						if (curView == "Tweets") {
+							$('#twitter-container').vTicker('stop');
+							$('#twitter-container').on('vticker.beforeTick', function() {});
+							$("#twitter-container").fadeIn();
+							$("#twitter-container").hide();
+						}
 
 						switch (id) {
 							case "stat-pcu" :
@@ -312,24 +340,28 @@
 								globe.drawTweets(ajaxTweetLoc);
 								globe.setCameraToRegion("All");
 
-								updateTweetsOpacity();
 								$("#twitter-container").show();
+								updateTweetsOpacity();
 
 								$('#twitter-container').vTicker({
 									speed: 500,
-									pause: 4000,
+									pause: 8000,
 									animation: 'fade',
 									showItems: 7,
 									mousePause: true,
-									height: $(window).height() - 150
+									height: $(window).height() - 150,
 								});
 
 								$('#twitter-container').on('vticker.beforeTick', function() {
-									updateTweetsOpacity();
+									updateTweetsActiveRow();
 									var ul = jQuery('#twitter-container ul');
-									lat = ul.children('li:nth-child(5)').attr("lat");
-									long = ul.children('li:nth-child(5)').attr("long");
-									globe.setCameraToPoint(lat, long, 3000);
+									lat = ul.children('li:nth-child(2)').attr("lat");
+									long = ul.children('li:nth-child(2)').attr("long");
+									city = ul.children('li:nth-child(2)').attr("city");
+									cnt = getTweetsInCity(city);
+									//globe.setCameraToPoint(lat, long);
+									//globe.attachGeoMarker(city + ":", lat, long, "tweets " + cnt, "");
+
 								});
 
 								curView = "Tweets";
