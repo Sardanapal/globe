@@ -122,10 +122,11 @@ DAT.Globe = function (container, options) {
         scene.add(globe);
         scene.updateMatrixWorld(true);
 
-        stars = createStars(1000, 64);
+        /*stars = createStars(1000, 64);
         if(controlPanel.StarsVisible) {
             scene.add(stars);
-        }
+        }*/
+        //$(container).css("background-image", "url('image/galaxy_starfield.png')");
 
         renderer = createRenderer(w, h);
 
@@ -305,10 +306,10 @@ DAT.Globe = function (container, options) {
             };
         })(controller.domElement.childNodes[0]);
 
-        controller = gui.add(controlPanel, 'StarsVisible').listen();
+        /*controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
             controlPanel.StarsVisible ? scene.add(stars) : scene.remove(stars);
-        });
+        });*/
 
         controller = gui.add(controlPanel, 'DayMode').listen();
         controller.onChange(function (value) {

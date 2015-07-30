@@ -35,8 +35,8 @@
 .statTable {
     z-index: 500;
     position: absolute;
-    right: 10px;
-    bottom: 10px;
+    right: 40px;
+    bottom: 40px;
     background: white;
     opacity: 0.5;
     border-radius: 6px;
