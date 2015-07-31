@@ -875,7 +875,27 @@ DAT.Globe = function (container, options) {
         
 
         tweenSetPoint.chain(tweenSetZoom);
-	*/
+	    // zoom task
+        var oldDistance = {x: distanceTarget};
+        var newdDistance = {x: distanceTarget * 2};
+
+        var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
+            .to({x: 700}, 1000)
+            .onUpdate(function () {
+                distanceTarget = oldDistance.x;
+            });
+
+        var tweenSetZoomOut = new TWEEN.Tween(oldDistance)
+            .to({x: 300}, 1000)
+            .onUpdate(function () {
+                distanceTarget = oldDistance.x;
+            });
+
+
+        tweenSetPoint.chain(tweenSetZoomIn);
+        tweenSetPoint.chain(tweenSetZoomOut);
+     */
+
         tweenSetPoint.start();
     }
 

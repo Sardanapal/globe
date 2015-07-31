@@ -27,7 +27,7 @@
 	
 	
 	<div class="top-header">
-		<h1 id="header">ALL REGIONS/BATTLES</h1>
+		<h1 id="header">WoT ALL REGIONS/BATTLES</h1>
 	</div>
 	
 	<div id="globe-container" class="globe"></div>
@@ -49,9 +49,9 @@
 		<div id="statistics">
 			<ul class="panel">
 				<li><h3>DISPLAY:</h3></li>
-				<li id="stat-pcu"		class="animation">Peak Concurrent Users</li>
-				<li id="stat-battles"	class="animation">Battles/Players</li>
-				<li id="stat-tweetts"	class="animation">Latest Tweets</li>
+				<li id="stat-pcu"		class="animation">WoT Peak Concurrent Users</li>
+				<li id="stat-battles"	class="animation">WoT Battles/Players</li>
+				<li id="stat-tweetts"	class="animation">WoT Latest Tweets</li>
 			</ul>
 		</div>
 		<div id="time-period">
@@ -69,6 +69,10 @@
 
 	<div class="bottom-footer">
 		<h3 id="footer">Past 24 hrs</h3>
+	</div>
+
+	<div class="logo">
+		<img src="image/logo.png" alt="Wargaming logo"/>
 	</div>
 
 	<script type="text/javascript">
@@ -320,14 +324,14 @@
 
 						switch (id) {
 							case "stat-pcu" :
-								$("#header").text("ALL REGIONS/PCCU");
+								$("#header").text("WoT ALL REGIONS/PCCU");
 								globe.drawPCUStatistic(ajaxRegions);
 								globe.setCameraToRegion("All");
 								curView = "PCU";
 								disableRegionsMenuItems(true);
 								break;
 							case "stat-battles" :
-								$("#header").text("ALL REGIONS/BATTLES");
+								$("#header").text("WoT ALL REGIONS/BATTLES");
 								var region = "All";
 								//globe.drawGameStatistic(ajaxRegions, region);
 								globe.runCycling(ajaxRegions);
@@ -336,7 +340,7 @@
 								disableRegionsMenuItems(false);
 								break;
 							case "stat-tweetts" : 
-								$("#header").text("ALL REGIONS/TWEETS");
+								$("#header").text("WoT ALL REGIONS/TWEETS");
 								globe.drawTweets(ajaxTweetLoc);
 								globe.setCameraToRegion("All");
 
@@ -359,8 +363,8 @@
 									long = ul.children('li:nth-child(2)').attr("long");
 									city = ul.children('li:nth-child(2)').attr("city");
 									cnt = getTweetsInCity(city);
-									//globe.setCameraToPoint(lat, long);
-									//globe.attachGeoMarker(city + ":", lat, long, "tweets " + cnt, "");
+									globe.setCameraToPoint(lat, long);
+									globe.attachGeoMarker(city + ":", lat, long, "tweets " + cnt, "");
 
 								});
 
