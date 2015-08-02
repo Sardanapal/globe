@@ -50,7 +50,7 @@ DAT.Globe = function (container, options) {
         }
     };
 
-    var EARTH_RADIUS = 250;
+    var EARTH_RADIUS = 150;
     var BAR_WIDTH = 2.75;
     var BAR_OPACITY = 0.8;
     var MAX_BAR_HEIGHT = 250;
@@ -79,7 +79,7 @@ DAT.Globe = function (container, options) {
     var mouseDown = false;
     var mouseVector = new THREE.Vector2();
 
-    var distance = 100000, distanceTarget = 100000;
+    var distance = 10000, distanceTarget = 640;
     var PI_HALF = Math.PI / 2;
 
     var regionData;
@@ -87,6 +87,7 @@ DAT.Globe = function (container, options) {
     var controlPanel = new function () {
         this.AutoRotation = (options.autoRotation == undefined || options.autoRotation) ? true: false;
         this.RegionsAutoCycle = (options.regionsAutoCycle == undefined || !options.regionsAutoCycle) ? false: true;
+        this.BattleMode = (options.battleMode == undefined || !options.battleMode) ? false: true;
         this.StarsVisible = (options.starsVisible == undefined || options.starsVisible) ? true : false;
         this.DayMode = (options.dayMode !== undefined && options.dayMode == false) ? false : true;
         this.ShowTooltip = (options.showTooltip !== undefined && options.showTooltip == false) ? false : true;
@@ -125,6 +126,7 @@ DAT.Globe = function (container, options) {
         if(controlPanel.StarsVisible) {
             $("body").css("background", "#000000 url(image/starfield.jpg) repeat");
         }
+        controlPanel.hideChangeSkinOption(controlPanel.BattleMode);
 
         renderer = createRenderer(w, h);
 
@@ -188,7 +190,8 @@ DAT.Globe = function (container, options) {
         var shader = Shaders['earth'];
         var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
 
-        uniforms.texture.value = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg"));
+        uniforms.texture.value = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
+            controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg"));
 
         var material = new THREE.ShaderMaterial({
             uniforms: uniforms,
@@ -314,6 +317,14 @@ DAT.Globe = function (container, options) {
             };
         })(controller.domElement.childNodes[0]);
 
+        controller = gui.add(controlPanel, 'BattleMode').listen();
+        controller.onChange(function (modeOn) {
+            var skinFileName = controlPanel.BattleMode ? "battlemode.jpg" :
+                controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg";
+            controlPanel.hideChangeSkinOption(modeOn);
+            setEarthSkin(skinFileName);
+        });
+
         controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
             $("body").css("background", controlPanel.StarsVisible ? "#000000 url(image/starfield.jpg) repeat" : "#000000");
@@ -324,6 +335,13 @@ DAT.Globe = function (container, options) {
             var skinFileName = controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg";
             setEarthSkin(skinFileName);
         });
+        controlPanel.hideChangeSkinOption = (function(element){
+            var checkBox = element;
+
+            return function(disable) {
+                checkBox.disabled = disable;
+            };
+        })(controller.domElement.childNodes[0]);
 
         controller = gui.add(controlPanel, 'ShowTooltip').listen();
         controller = gui.add(controlPanel, 'ShowStatistic').listen();
@@ -864,39 +882,23 @@ DAT.Globe = function (container, options) {
                 globe.rotation.y = oldTarget.z;
             });
 
-	/*
-        // zoom task
-        var oldDistance = {x: distanceTarget};
-        var tweenSetZoom = new TWEEN.Tween(oldDistance)
-            .to({x: 700}, 1000)
-            .onUpdate(function () {
-                distanceTarget = oldDistance.x;
-            });
-        
-
-        tweenSetPoint.chain(tweenSetZoom);
 	    // zoom task
         var oldDistance = {x: distanceTarget};
-        var newdDistance = {x: distanceTarget * 2};
+        var tweenSetZoomOut = new TWEEN.Tween(oldDistance)
+            .to({x: 1100}, 1000)
+            .onUpdate(function () {
+                distanceTarget = oldDistance.x;
+            });
 
         var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
-            .to({x: 700}, 1000)
+            .to({x: 640}, 1000)
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
             });
 
-        var tweenSetZoomOut = new TWEEN.Tween(oldDistance)
-            .to({x: 300}, 1000)
-            .onUpdate(function () {
-                distanceTarget = oldDistance.x;
-            });
-
-
+        tweenSetZoomOut.chain(tweenSetPoint);
         tweenSetPoint.chain(tweenSetZoomIn);
-        tweenSetPoint.chain(tweenSetZoomOut);
-     */
-
-        tweenSetPoint.start();
+        tweenSetZoomOut.start();
     }
 
 
