@@ -220,16 +220,6 @@ DAT.Globe = function (container, options) {
         return mesh;
     }
 
-    function createStars(radius, segments) {
-        return new THREE.Mesh(
-            new THREE.SphereGeometry(radius, segments, segments),
-            new THREE.MeshBasicMaterial({
-                map: THREE.ImageUtils.loadTexture(imgDir + 'galaxy_starfield.png'),
-                side: THREE.BackSide
-            })
-        );
-    }
-
     function createTooltip(container) {
         $('<div id="barTooltip" class="tooltip"></div>').insertAfter(container);
         return $('#barTooltip');
@@ -323,6 +313,9 @@ DAT.Globe = function (container, options) {
                 controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg";
             controlPanel.hideChangeSkinOption(modeOn);
             setEarthSkin(skinFileName);
+            // in battle mode all bars should be red
+            var color = new THREE.Color(modeOn ? "#FF0000" : controlPanel.barColor);
+            setFiguresColor(barContainer, color);
         });
 
         controller = gui.add(controlPanel, 'StarsVisible').listen();
@@ -360,23 +353,26 @@ DAT.Globe = function (container, options) {
 
         var tweetColorController = gui.addColor(controlPanel, "TweetColor").listen();
         tweetColorController.onChange(function (value) {
-            for (var i = 0; i < tweetContainer.children.length; i++) {
-                var mesh = tweetContainer.children[i];
-                mesh.material.color = new THREE.Color(value);
-            }
+            var color = new THREE.Color(value);
+            setFiguresColor(tweetContainer, color);
         });
 
         var barColorController = gui.addColor(controlPanel, "BarColor").listen();
         barColorController.onChange(function (value) {
-            for (var i = 0; i < barContainer.children.length; i++) {
-                var mesh = barContainer.children[i];
-                for (var j = 0; j < mesh.geometry.faces.length; j++) {
-                    mesh.geometry.faces[j].color = new THREE.Color(value);
-                }
-                mesh.material.color = new THREE.Color(value);
-                mesh.geometry.colorsNeedUpdate = true;
-            }
+            var color = new THREE.Color(value);
+            setFiguresColor(barContainer, color);
         });
+    }
+
+    function setFiguresColor(container, color){
+        for (var i = 0; i < container.children.length; i++) {
+            var mesh = container.children[i];
+            for (var j = 0; j < mesh.geometry.faces.length; j++) {
+                mesh.geometry.faces[j].color = color;
+            }
+            mesh.material.color = color;
+            mesh.geometry.colorsNeedUpdate = true;
+        }
     }
 
     function getMax(array, fieldName) {
@@ -607,7 +603,7 @@ DAT.Globe = function (container, options) {
         point.lookAt(earth.position);
         point.updateMatrix();
 
-        barContainer.add(point);
+        tweetContainer.add(point);
 
         var zoffset = 1 + (tweetCnt * 0.15) + Math.random() * 0.15;
         if (zoffset > 1.5) zoffset = 1.5;
@@ -630,6 +626,10 @@ DAT.Globe = function (container, options) {
         var barWidth =  Math.max(BAR_WIDTH * 5 * perc, BAR_WIDTH);
         if(controlPanel.BarColor !== "#000000"){
             color = new THREE.Color(controlPanel.BarColor);
+        }
+
+        if(controlPanel.BattleMode){
+            color = new THREE.Color("#FF0000");
         }
 
         var geometry = new THREE.BoxGeometry(barWidth, barWidth, 1);
@@ -669,6 +669,10 @@ DAT.Globe = function (container, options) {
 
         if(controlPanel.BarColor !== "#000000"){
             color1 = color2 = new THREE.Color(controlPanel.BarColor);
+        }
+
+        if(controlPanel.BattleMode){
+            color1 = color2 = new THREE.Color("#FF0000");
         }
 
         var barPlayers = new THREE.Mesh(geometry);

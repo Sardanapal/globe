@@ -2,6 +2,7 @@
   List of fields is:
     - "autoRotation" turns On/Off globe auto rotation(default: true),
     - "starsVisible" turns stars around the globe(default: true),
+    - "battleMode" turns On/Off special B&W globe skin and bars will be painted in red,
     - "dayMode" turns Day/Night skin on the globe(default: true),
     - "showTooltip" turns On/Off showing bar detail information when you point it by cursor(default: true),
     - "showStatistic" turns On/Off showing statistic information near each bar (default: true),

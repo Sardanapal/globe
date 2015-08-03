@@ -1,6 +1,7 @@
 var globeOptions = {
     autoRotation: true,   // turns On/Off globe auto rotation(default: true)
     starsVisible: false,   // turns stars around the globe(default: true)
+    battleMode: false,
     dayMode: true,        // turns Day/Night skin on the globe(default: true)
     showTooltip: false,   // turns On/Off showing bar detail information when you point it by cursor(default: true)
     showStatistic: true,  // turns On/Off showing statistic information near each bar (default: true)
