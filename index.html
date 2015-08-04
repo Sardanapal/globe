@@ -49,7 +49,7 @@
 		<div id="statistics">
 			<ul class="panel">
 				<li><h3>DISPLAY:</h3></li>
-				<li id="stat-pcu"		class="animation">WoT Peak Concurrent Users</li>
+				<li id="stat-pcu"		class="animation">WoT PCCU</li>
 				<li id="stat-battles"	class="animation">WoT Battles/Players</li>
 				<li id="stat-tweetts"	class="animation">WoT Latest Tweets</li>
 			</ul>
@@ -160,6 +160,14 @@
 					},
 					success: function (msg) {
 						msg._items.removeValue("city", " ");
+						msg._items.sort(function(a, b) {
+							var res = a.cntr_short.localeCompare(b.cntr_short);
+							if (res == 0) {
+								res = a.city.localeCompare(b.city);
+							}
+
+							return res;
+						});
 
 						ajaxTweetMsg = msg;
 						processTweets(ajaxTweetMsg);

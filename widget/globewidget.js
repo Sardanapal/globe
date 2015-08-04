@@ -847,7 +847,7 @@ DAT.Globe = function (container, options) {
     function setCameraToRegion(regionName) {
         var regionRef = findRegionInRef(regionName, "full");
         if(regionRef != null && regionRef.loc !== undefined){
-            setCameraToPoint(regionRef.loc[0], regionRef.loc[1]);
+            setCameraToPoint(regionRef.loc[0], regionRef.loc[1], true);
         }
         var fileName = imgDir + 'outlines/' + regionName + '.png';
         countryOutlines.material.map = THREE.ImageUtils.loadTexture(fileName, undefined, undefined, function () {
@@ -855,7 +855,10 @@ DAT.Globe = function (container, options) {
         });
     }
 
-    function setCameraToPoint(lat, lng) {
+    function setCameraToPoint(lat, lng, zoom) {
+
+        zoom = typeof zoom !== 'undefined' ? zoom : false;
+
         var coord = calcCoordinates(lat, lng, distance);
 
         globe.rotation.y = globe.rotation.y % ( 2 * Math.PI);
@@ -900,9 +903,13 @@ DAT.Globe = function (container, options) {
                 distanceTarget = oldDistance.x;
             });
 
-        tweenSetZoomOut.chain(tweenSetPoint);
-        tweenSetPoint.chain(tweenSetZoomIn);
-        tweenSetZoomOut.start();
+        if (zoom) {
+            tweenSetZoomOut.chain(tweenSetPoint);
+            tweenSetPoint.chain(tweenSetZoomIn);
+            tweenSetZoomOut.start();
+        } else {
+            tweenSetPoint.start();
+        }
     }
 
 

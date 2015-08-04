@@ -12,7 +12,7 @@
     height: 0,
     animate: true,
     margin: 0,
-    padding: 0,
+    padding: 5,
     startPaused: false
   };
 
