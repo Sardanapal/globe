@@ -325,7 +325,6 @@
 
 						if (curView == "Tweets") {
 							$('#twitter-container').vTicker('stop');
-							$('#twitter-container').on('vticker.beforeTick', function() {});
 							$("#twitter-container").fadeIn();
 							$("#twitter-container").hide();
 						}
@@ -365,14 +364,16 @@
 								});
 
 								$('#twitter-container').on('vticker.beforeTick', function() {
-									updateTweetsActiveRow();
-									var ul = jQuery('#twitter-container ul');
-									lat = ul.children('li:nth-child(2)').attr("lat");
-									long = ul.children('li:nth-child(2)').attr("long");
-									city = ul.children('li:nth-child(2)').attr("city");
-									cnt = getTweetsInCity(city);
-									globe.setCameraToPoint(lat, long);
-									globe.attachGeoMarker(city + ":", lat, long, "tweets " + cnt, "");
+									if (curView == "Tweets") {
+										updateTweetsActiveRow();
+										var ul = jQuery('#twitter-container ul');
+										lat = ul.children('li:nth-child(2)').attr("lat");
+										long = ul.children('li:nth-child(2)').attr("long");
+										city = ul.children('li:nth-child(2)').attr("city");
+										cnt = getTweetsInCity(city);
+										globe.setCameraToPoint(lat, long);
+										globe.attachGeoMarker(city + ":", lat, long, "tweets " + cnt, "");
+									}
 
 								});
 

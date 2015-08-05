@@ -13,13 +13,13 @@ DAT.Globe = function (container, options) {
         };
 
     var RegionsRef = [
-        {full: "Europe", short:"EU", loc: [47.97, 16.097]},
-        {full: "Korea", short:"KR", loc: [35.8615124,127.096405]},
-        {full: "North America", short:"NA", loc: [37.6,-95.665]},
-        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969]},
-        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469]},
-        {full: "Russia", short:"RU", loc: [55.749792,37.6324949]},
-        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128]}
+        {full: "Europe", short:"EU", loc: [47.97, 16.097], zoom : 1.5},
+        {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 3.0},
+        {full: "North America", short:"NA", loc: [37.6,-95.665], zoom : 1.0},
+        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.5},
+        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.5},
+        {full: "Russia", short:"RU", loc: [55.749792,37.6324949], zoom : 1.0},
+        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.5}
     ];
 
     var Shaders = {
@@ -847,15 +847,33 @@ DAT.Globe = function (container, options) {
     function setCameraToRegion(regionName) {
         var regionRef = findRegionInRef(regionName, "full");
         if(regionRef != null && regionRef.loc !== undefined){
-            setCameraToPoint(regionRef.loc[0], regionRef.loc[1], true);
+            setCameraToPoint(regionRef.loc[0], regionRef.loc[1], true, regionRef.zoom);
+        } else {
+            var oldDistance = {x: distanceTarget};
+            var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
+                .to({x: 640 }, 1000)
+                .onUpdate(function () {
+                    distanceTarget = oldDistance.x;
+                });
+            tweenSetZoomIn.start();
         }
+
         var fileName = imgDir + 'outlines/' + regionName + '.png';
+
+        if(controlPanel.BattleMode) {
+            fileName = imgDir + 'outlines/' + regionName + '_r.png';
+        }
+
+        //var oldTexture = countryOutlines.material.map;
+
         countryOutlines.material.map = THREE.ImageUtils.loadTexture(fileName, undefined, undefined, function () {
             console.log("File with texture " + fileName + " not found!")
         });
+
+        //oldTexture.Dispose();
     }
 
-    function setCameraToPoint(lat, lng, zoom) {
+    function setCameraToPoint(lat, lng, zoom, zoomFactor) {
 
         zoom = typeof zoom !== 'undefined' ? zoom : false;
 
@@ -898,7 +916,7 @@ DAT.Globe = function (container, options) {
             });
 
         var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
-            .to({x: 640}, 1000)
+            .to({x: 640 / zoomFactor}, 1000)
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
             });
