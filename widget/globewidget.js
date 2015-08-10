@@ -249,6 +249,7 @@ DAT.Globe = function (container, options) {
         var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
 
         uniforms['texture'].value = THREE.ImageUtils.loadTexture(imgDir + skinFileName);
+        uniforms['texture'].minFilter = THREE.NearestFilter;
 
         var material = new THREE.ShaderMaterial({
             uniforms: uniforms,
@@ -256,6 +257,7 @@ DAT.Globe = function (container, options) {
             fragmentShader: shader.fragmentShader
         });
 
+        earth.material.dispose();
         earth.material = material;
         earth.updateMorphTargets();
     }
@@ -729,6 +731,8 @@ DAT.Globe = function (container, options) {
             })
             .onComplete(function () {
                 if(resOpacity == 0) {
+                    mesh.geometry.dispose();
+                    mesh.material.dispose();
                     container.remove(mesh);
                 }
             });
@@ -1002,6 +1006,10 @@ DAT.Globe = function (container, options) {
     }
 
     function removeOldData() {
+        barContainer.children.forEach(function(mesh){
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+        });
         barContainer.children = [];
         INTERSECTED = null;
         removeMarkers();
