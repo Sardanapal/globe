@@ -25,26 +25,50 @@ DAT.Globe = function (container, options) {
     var Shaders = {
         'earth': {
             uniforms: {
-                'texture': {type: 't', value: null}
+                //'texture': {type: 't', value: null}
+                width:      { type: "f", value: window.innerWidth },
+                height:     { type: "f", value: window.innerHeight },
+                mapIndex:   { type: "t", value: null },
+                outline:    { type: "t", value: null },
+                lookup:     { type: "t", value: null },
+                blendImage: { type: "t", value: null }
             },
             vertexShader: [
                 'varying vec3 vNormal;',
                 'varying vec2 vUv;',
                 'void main() {',
-                'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
-                'vNormal = normalize( normalMatrix * normal );',
-                'vUv = uv;',
+                    'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+                    'vNormal = normalize( normalMatrix * normal );',
+                    'vUv = uv;',
                 '}'
             ].join('\n'),
             fragmentShader: [
-                'uniform sampler2D texture;',
+                /*'uniform sampler2D texture;',
                 'varying vec3 vNormal;',
                 'varying vec2 vUv;',
                 'void main() {',
-                'vec3 diffuse = texture2D( texture, vUv ).xyz;',
-                'float intensity = 1.05 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) );',
-                'vec3 atmosphere = vec3( 1.0, 1.0, 1.0 ) * pow( intensity, 3.0 );',
-                'gl_FragColor = vec4( diffuse + atmosphere, 1.0 );',
+                   'vec3 diffuse = texture2D( texture, vUv ).xyz;',
+                   'float intensity = 1.05 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) );',
+                   'vec3 atmosphere = vec3( 1.0, 1.0, 1.0 ) * pow( intensity, 3.0 );',
+                   'gl_FragColor = vec4( diffuse + atmosphere, 1.0 );',
+                '}'*/
+                'uniform sampler2D mapIndex;',
+                'uniform sampler2D lookup;',
+                'uniform sampler2D outline;',
+                'uniform sampler2D blendImage;',
+                'uniform sampler2D bump;',
+                'varying vec3 vNormal;',
+                'varying vec2 vUv;',
+
+                'void main(){',
+                    'vec4 mapColor = texture2D( mapIndex, vUv );',
+                    'float indexedColor = mapColor.y;',
+                    'vec2 lookupUV = vec2( indexedColor, 0.0 );',
+                    'vec4 lookupColor = texture2D( lookup, lookupUV );',
+                    'vec4 outlineColor = texture2D( outline, vUv );',
+                    'vec4 blendColor = texture2D( blendImage, vUv );',
+
+                    'gl_FragColor = 0.5 * outlineColor + 1.0 * lookupColor + 1.0 * blendColor;',
                 '}'
             ].join('\n')
         }
@@ -84,6 +108,8 @@ DAT.Globe = function (container, options) {
 
     var regionData;
 
+    var lookupContext, lookupTexture;
+
     var controlPanel = new function () {
         this.AutoRotation = (options.autoRotation == undefined || options.autoRotation) ? true: false;
         this.RegionsAutoCycle = (options.regionsAutoCycle == undefined || !options.regionsAutoCycle) ? false: true;
@@ -119,7 +145,7 @@ DAT.Globe = function (container, options) {
         globe.add(earth);
         globe.add(barContainer);
         globe.add(tweetContainer);
-        globe.add(countryOutlines);
+        //globe.add(countryOutlines);
         scene.add(globe);
         scene.updateMatrixWorld(true);
 
@@ -190,14 +216,44 @@ DAT.Globe = function (container, options) {
         var shader = Shaders['earth'];
         var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
 
-        uniforms.texture.value = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
+        /*uniforms.texture.value = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
             controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg"));
 
         var material = new THREE.ShaderMaterial({
             uniforms: uniforms,
             vertexShader: shader.vertexShader,
             fragmentShader: shader.fragmentShader
-        });
+        });*/
+
+        var lookupCanvas = document.createElement('canvas');
+        lookupCanvas.width = 256;
+        lookupCanvas.height = 1;
+        lookupContext = lookupCanvas.getContext('2d');
+        lookupTexture = new THREE.Texture( lookupCanvas );
+        lookupTexture.magFilter = THREE.NearestFilter;
+        lookupTexture.minFilter = THREE.NearestFilter;
+        lookupTexture.needsUpdate = true;
+
+        var mapTexture = THREE.ImageUtils.loadTexture("image/earth-index-shifted-gray.png");
+        mapTexture.magFilter = THREE.NearestFilter;
+        mapTexture.minFilter = THREE.NearestFilter;
+        mapTexture.needsUpdate = true;
+
+        var outlineTexture = THREE.ImageUtils.loadTexture("image/outlines/All.png");
+        outlineTexture.needsUpdate = true;
+
+        uniforms.blendImage.value = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
+                controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg"));
+        uniforms.mapIndex.value = mapTexture;
+        uniforms.outline.value = outlineTexture;
+        uniforms.lookup.value = lookupTexture;
+
+
+        var material = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader:   shader.vertexShader,
+                fragmentShader: shader.fragmentShader
+            });
 
         var earth = new THREE.Mesh(geometry, material);
         earth.rotation.y = Math.PI;
@@ -248,8 +304,8 @@ DAT.Globe = function (container, options) {
         var shader = Shaders['earth'];
         var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
 
-        uniforms['texture'].value = THREE.ImageUtils.loadTexture(imgDir + skinFileName);
-        uniforms['texture'].minFilter = THREE.NearestFilter;
+        uniforms['blendImage'].value = THREE.ImageUtils.loadTexture(imgDir + skinFileName);
+        uniforms['blendImage'].minFilter = THREE.NearestFilter;
 
         var material = new THREE.ShaderMaterial({
             uniforms: uniforms,
@@ -323,6 +379,20 @@ DAT.Globe = function (container, options) {
         controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
             $("body").css("background", controlPanel.StarsVisible ? "#000000 url(image/starfield.jpg) repeat" : "#000000");
+
+            lookupContext.clearRect(0,0,256,1);
+            for (var i = 0; i < 228; i++){
+                if (i == 0)
+                    lookupContext.fillStyle = "rgba(0,0,0,1.0)"
+                else if (i == 103 || i == 120 || i == 118 || i == 48 || i == 35)
+                    lookupContext.fillStyle = "rgba(256,0,0,0.5)"
+                else
+                    lookupContext.fillStyle = "rgba(0,0,0,1.0)"
+
+                lookupContext.fillRect( i, 0, 1, 1 );
+            }
+
+            lookupTexture.needsUpdate = true;
         });
 
         controller = gui.add(controlPanel, 'DayMode').listen();
