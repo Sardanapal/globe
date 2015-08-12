@@ -13,26 +13,17 @@ DAT.Globe = function (container, options) {
         };
 
     var RegionsRef = [
-        {full: "Europe", short:"EU", loc: [47.97, 16.097], zoom : 1.5},
-        {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 3.0},
-        {full: "North America", short:"NA", loc: [37.6,-95.665], zoom : 1.0},
-        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.5},
-        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.5},
-        {full: "Russia", short:"RU", loc: [55.749792,37.6324949], zoom : 1.0},
-        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.5}
+        {full: "Europe", short:"EU", loc: [47.97, 16.097], zoom : 1.5, countries:[35, 69, 186, 100, 103, 120, 140, 57,
+            126, 118, 28 , 48, 81, 167, 48, 134, 131, 145, 84, 44, 59 , 111, 133, 144, 3, 54, 112, 67, 13, 36,  113]},
+        {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 3.0, countries:[124]},
+        {full: "North America", short:"NA", loc: [37.6,-95.665], zoom : 1.0, countries:[97, 150, 21]},
+        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.5, countries:[96]},
+        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.5, countries:[96]},
+        {full: "Russia", short:"RU", loc: [55.749792,37.6324949], zoom : 1.0, countries:[92]},
+        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.5, countries:[91, 123, 138, 50,  107, 170, 160, 7, 228, 108]}
     ];
 
-    var Shaders = {
-        'earth': {
-            uniforms: {
-                //'texture': {type: 't', value: null}
-                width:      { type: "f", value: window.innerWidth },
-                height:     { type: "f", value: window.innerHeight },
-                mapIndex:   { type: "t", value: null },
-                outline:    { type: "t", value: null },
-                lookup:     { type: "t", value: null },
-                blendImage: { type: "t", value: null }
-            },
+    var Shader = {
             vertexShader: [
                 'varying vec3 vNormal;',
                 'varying vec2 vUv;',
@@ -43,15 +34,6 @@ DAT.Globe = function (container, options) {
                 '}'
             ].join('\n'),
             fragmentShader: [
-                /*'uniform sampler2D texture;',
-                'varying vec3 vNormal;',
-                'varying vec2 vUv;',
-                'void main() {',
-                   'vec3 diffuse = texture2D( texture, vUv ).xyz;',
-                   'float intensity = 1.05 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) );',
-                   'vec3 atmosphere = vec3( 1.0, 1.0, 1.0 ) * pow( intensity, 3.0 );',
-                   'gl_FragColor = vec4( diffuse + atmosphere, 1.0 );',
-                '}'*/
                 'uniform sampler2D mapIndex;',
                 'uniform sampler2D lookup;',
                 'uniform sampler2D outline;',
@@ -71,7 +53,6 @@ DAT.Globe = function (container, options) {
                     'gl_FragColor = 0.5 * outlineColor + 1.0 * lookupColor + 1.0 * blendColor;',
                 '}'
             ].join('\n')
-        }
     };
 
     var EARTH_RADIUS = 150;
@@ -80,7 +61,7 @@ DAT.Globe = function (container, options) {
     var MAX_BAR_HEIGHT = 250;
 
     var camera, scene, renderer, w, h;
-    var earth, stars, countryOutlines, globe;
+    var earth, globe;
     var raycaster;
     var barContainer, tweetContainer;
     var INTERSECTED = null;
@@ -121,6 +102,7 @@ DAT.Globe = function (container, options) {
         this.ShowStatTable = (options.showStatTable !== undefined && options.showStatTable == true) ? true : false;
         this.TweetColor = (options.tweetColor !== undefined) ? options.tweetColor : "#000000";
         this.BarColor = (options.barColor !== undefined) ? options.barColor : "#000000";
+        this.RegionColor = (options.regionColor !== undefined) ? options.regionColor : "#00D200";
     }
 
     function init() {
@@ -140,12 +122,10 @@ DAT.Globe = function (container, options) {
         earth = createEarth(EARTH_RADIUS);
         barContainer = new THREE.Object3D();
         tweetContainer = new THREE.Object3D();
-        countryOutlines = createCountryOutlines(EARTH_RADIUS);
         globe = new THREE.Object3D();
         globe.add(earth);
         globe.add(barContainer);
         globe.add(tweetContainer);
-        //globe.add(countryOutlines);
         scene.add(globe);
         scene.updateMatrixWorld(true);
 
@@ -213,18 +193,6 @@ DAT.Globe = function (container, options) {
     function createEarth(radius) {
         var geometry = new THREE.SphereGeometry(radius, 40, 40);
 
-        var shader = Shaders['earth'];
-        var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
-
-        /*uniforms.texture.value = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
-            controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg"));
-
-        var material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: shader.vertexShader,
-            fragmentShader: shader.fragmentShader
-        });*/
-
         var lookupCanvas = document.createElement('canvas');
         lookupCanvas.width = 256;
         lookupCanvas.height = 1;
@@ -237,43 +205,31 @@ DAT.Globe = function (container, options) {
         var mapTexture = THREE.ImageUtils.loadTexture("image/earth-index-shifted-gray.png");
         mapTexture.magFilter = THREE.NearestFilter;
         mapTexture.minFilter = THREE.NearestFilter;
-        mapTexture.needsUpdate = true;
+        //mapTexture.needsUpdate = true;
 
         var outlineTexture = THREE.ImageUtils.loadTexture("image/outlines/All.png");
-        outlineTexture.needsUpdate = true;
+        //outlineTexture.needsUpdate = true;
 
-        uniforms.blendImage.value = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
+        var blendImage = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
                 controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg"));
-        uniforms.mapIndex.value = mapTexture;
-        uniforms.outline.value = outlineTexture;
-        uniforms.lookup.value = lookupTexture;
-
 
         var material = new THREE.ShaderMaterial({
-                uniforms: uniforms,
-                vertexShader:   shader.vertexShader,
-                fragmentShader: shader.fragmentShader
-            });
+            uniforms:{
+                width:      { type: "f", value: window.innerWidth },
+                height:     { type: "f", value: window.innerHeight },
+                mapIndex:   { type: "t", value: mapTexture },
+                outline:    { type: "t", value: outlineTexture },
+                lookup:     { type: "t", value: lookupTexture },
+                blendImage: { type: "t", value: blendImage }
+            },
+            vertexShader:   Shader.vertexShader,
+            fragmentShader: Shader.fragmentShader
+        });
 
         var earth = new THREE.Mesh(geometry, material);
         earth.rotation.y = Math.PI;
 
         return earth;
-    }
-
-    function createCountryOutlines(radius) {
-        var mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(radius + 0.2, 40, 40),
-            new THREE.MeshBasicMaterial({
-                map: THREE.ImageUtils.loadTexture(imgDir + 'outlines/All.png'),
-                side: THREE.FrontSide,
-                transparent: true,
-                opacity: 0.25
-            })
-        );
-        mesh.rotation.y = Math.PI;
-
-        return mesh;
     }
 
     function createTooltip(container) {
@@ -301,20 +257,7 @@ DAT.Globe = function (container, options) {
     }
 
     function setEarthSkin(skinFileName) {
-        var shader = Shaders['earth'];
-        var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
-
-        uniforms['blendImage'].value = THREE.ImageUtils.loadTexture(imgDir + skinFileName);
-        uniforms['blendImage'].minFilter = THREE.NearestFilter;
-
-        var material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: shader.vertexShader,
-            fragmentShader: shader.fragmentShader
-        });
-
-        earth.material.dispose();
-        earth.material = material;
+        earth.material.uniforms['blendImage'].value = THREE.ImageUtils.loadTexture(imgDir + skinFileName);
         earth.updateMorphTargets();
     }
 
@@ -379,20 +322,6 @@ DAT.Globe = function (container, options) {
         controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
             $("body").css("background", controlPanel.StarsVisible ? "#000000 url(image/starfield.jpg) repeat" : "#000000");
-
-            lookupContext.clearRect(0,0,256,1);
-            for (var i = 0; i < 228; i++){
-                if (i == 0)
-                    lookupContext.fillStyle = "rgba(0,0,0,1.0)"
-                else if (i == 103 || i == 120 || i == 118 || i == 48 || i == 35)
-                    lookupContext.fillStyle = "rgba(256,0,0,0.5)"
-                else
-                    lookupContext.fillStyle = "rgba(0,0,0,1.0)"
-
-                lookupContext.fillRect( i, 0, 1, 1 );
-            }
-
-            lookupTexture.needsUpdate = true;
         });
 
         controller = gui.add(controlPanel, 'DayMode').listen();
@@ -918,6 +847,35 @@ DAT.Globe = function (container, options) {
         TWEEN.update();
     }
 
+    function isInArray(array, value){
+        if(array == undefined){
+            return false;
+        }
+        for(var i = 0; i < array.length; i++){
+            if(array[i] == value){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function paintRegion(countries, cssColor){
+        lookupContext.clearRect(0,0,256,1);
+        for (var i = 0; i < 228; i++){
+            if (i == 0) {
+                lookupContext.fillStyle = "rgba(0,0,0,1.0)";
+            }else if (isInArray(countries, i)) {
+                lookupContext.fillStyle = cssColor;
+            }else {
+                lookupContext.fillStyle = "rgba(0,0,0,1.0)";
+            }
+
+            lookupContext.fillRect( i, 0, 1, 1 );
+        }
+
+        lookupTexture.needsUpdate = true;
+    }
+
     function setCameraToRegion(regionName) {
         var regionRef = findRegionInRef(regionName, "full");
         if(regionRef != null && regionRef.loc !== undefined){
@@ -932,19 +890,8 @@ DAT.Globe = function (container, options) {
             tweenSetZoomIn.start();
         }
 
-        var fileName = imgDir + 'outlines/' + regionName + '.png';
-
-        if(controlPanel.BattleMode) {
-            fileName = imgDir + 'outlines/' + regionName + '_r.png';
-        }
-
-        //var oldTexture = countryOutlines.material.map;
-
-        countryOutlines.material.map = THREE.ImageUtils.loadTexture(fileName, undefined, undefined, function () {
-            console.log("File with texture " + fileName + " not found!")
-        });
-
-        //oldTexture.Dispose();
+        var color = (controlPanel.BattleMode) ? "#F00000" : controlPanel.RegionColor;
+        paintRegion(regionRef.countries, color);
     }
 
     function setCameraToPoint(lat, lng, zoom, zoomFactor) {
