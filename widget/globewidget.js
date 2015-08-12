@@ -14,7 +14,7 @@ DAT.Globe = function (container, options) {
 
     var RegionsRef = [
         {full: "Europe", short:"EU", loc: [47.97, 16.097], zoom : 1.5, countries:[35, 69, 186, 100, 103, 120, 140, 57,
-            126, 118, 28 , 48, 81, 167, 48, 134, 131, 145, 84, 44, 59 , 111, 133, 144, 3, 54, 112, 67, 13, 36,  113]},
+            118, 28 , 48, 81, 167, 48, 134, 131, 58, 3, 84, 44, 59 , 111, 133, 144, 54, 112, 67, 13, 36,  113, 77, 94, 15, 175]},
         {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 3.0, countries:[124]},
         {full: "North America", short:"NA", loc: [37.6,-95.665], zoom : 1.0, countries:[97, 150, 21]},
         {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.5, countries:[96]},
@@ -23,7 +23,7 @@ DAT.Globe = function (container, options) {
         {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.5, countries:[91, 123, 138, 50,  107, 170, 160, 7, 228, 108]}
     ];
 
-    var Shader = {
+    var Shaders = {
             vertexShader: [
                 'varying vec3 vNormal;',
                 'varying vec2 vUv;',
@@ -50,7 +50,7 @@ DAT.Globe = function (container, options) {
                     'vec4 outlineColor = texture2D( outline, vUv );',
                     'vec4 blendColor = texture2D( blendImage, vUv );',
 
-                    'gl_FragColor = 0.5 * outlineColor + 1.0 * lookupColor + 1.0 * blendColor;',
+                    'gl_FragColor = 0.5 * outlineColor + 0.7 * lookupColor + 1.0 * blendColor;',
                 '}'
             ].join('\n')
     };
@@ -222,8 +222,8 @@ DAT.Globe = function (container, options) {
                 lookup:     { type: "t", value: lookupTexture },
                 blendImage: { type: "t", value: blendImage }
             },
-            vertexShader:   Shader.vertexShader,
-            fragmentShader: Shader.fragmentShader
+            vertexShader:   Shaders.vertexShader,
+            fragmentShader: Shaders.fragmentShader
         });
 
         var earth = new THREE.Mesh(geometry, material);
@@ -362,6 +362,11 @@ DAT.Globe = function (container, options) {
         barColorController.onChange(function (value) {
             var color = new THREE.Color(value);
             setFiguresColor(barContainer, color);
+        });
+
+        var regionColorController = gui.addColor(controlPanel, "RegionColor").listen();
+        regionColorController.onChange(function (value) {
+            // change region color if it was selected
         });
     }
 
@@ -891,7 +896,8 @@ DAT.Globe = function (container, options) {
         }
 
         var color = (controlPanel.BattleMode) ? "#F00000" : controlPanel.RegionColor;
-        paintRegion(regionRef.countries, color);
+        var countries = regionRef == null ? [] : regionRef.countries;
+        paintRegion(countries, color);
     }
 
     function setCameraToPoint(lat, lng, zoom, zoomFactor) {
