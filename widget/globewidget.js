@@ -207,7 +207,7 @@ DAT.Globe = function (container, options) {
         mapTexture.minFilter = THREE.NearestFilter;
         //mapTexture.needsUpdate = true;
 
-        var outlineTexture = THREE.ImageUtils.loadTexture("image/outlines/All.png");
+        var outlineTexture = THREE.ImageUtils.loadTexture("image/earth-outline.png");
         //outlineTexture.needsUpdate = true;
 
         var blendImage = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
