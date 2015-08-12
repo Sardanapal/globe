@@ -88,6 +88,7 @@ DAT.Globe = function (container, options) {
     var PI_HALF = Math.PI / 2;
 
     var regionData;
+    var currentRegion;
 
     var lookupContext, lookupTexture;
 
@@ -130,7 +131,7 @@ DAT.Globe = function (container, options) {
         scene.updateMatrixWorld(true);
 
         if(controlPanel.StarsVisible) {
-            $("body").css("background", "#000000 url(image/starfield.jpg) repeat");
+            $("body").css("background", "#000000 url(" + imgDir + "starfield.jpg) repeat");
         }
         controlPanel.hideChangeSkinOption(controlPanel.BattleMode);
 
@@ -202,12 +203,12 @@ DAT.Globe = function (container, options) {
         lookupTexture.minFilter = THREE.NearestFilter;
         lookupTexture.needsUpdate = true;
 
-        var mapTexture = THREE.ImageUtils.loadTexture("image/earth-index-shifted-gray.png");
+        var mapTexture = THREE.ImageUtils.loadTexture(imgDir + "earth-index-shifted-gray.png");
         mapTexture.magFilter = THREE.NearestFilter;
         mapTexture.minFilter = THREE.NearestFilter;
         //mapTexture.needsUpdate = true;
 
-        var outlineTexture = THREE.ImageUtils.loadTexture("image/earth-outline.png");
+        var outlineTexture = THREE.ImageUtils.loadTexture(imgDir + "earth-outline.png");
         //outlineTexture.needsUpdate = true;
 
         var blendImage = THREE.ImageUtils.loadTexture(imgDir + (controlPanel.BattleMode ? "battlemode.jpg" :
@@ -317,11 +318,12 @@ DAT.Globe = function (container, options) {
             // in battle mode all bars should be red
             var color = new THREE.Color(modeOn ? "#FF0000" : controlPanel.barColor);
             setFiguresColor(barContainer, color);
+            paintRegion(currentRegion);
         });
 
         controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
-            $("body").css("background", controlPanel.StarsVisible ? "#000000 url(image/starfield.jpg) repeat" : "#000000");
+            $("body").css("background", controlPanel.StarsVisible ? "#000000 url(" + imgDir + "starfield.jpg) repeat" : "#000000");
         });
 
         controller = gui.add(controlPanel, 'DayMode').listen();
@@ -367,6 +369,7 @@ DAT.Globe = function (container, options) {
         var regionColorController = gui.addColor(controlPanel, "RegionColor").listen();
         regionColorController.onChange(function (value) {
             // change region color if it was selected
+            paintRegion(currentRegion);
         });
     }
 
@@ -864,13 +867,16 @@ DAT.Globe = function (container, options) {
         return false;
     }
 
-    function paintRegion(countries, cssColor){
+    function paintRegion(regionRef){
+        var countries = regionRef == null ? [] : regionRef.countries;
+        var color = (controlPanel.BattleMode) ? "#F00000" : controlPanel.RegionColor;
+
         lookupContext.clearRect(0,0,256,1);
         for (var i = 0; i < 228; i++){
             if (i == 0) {
                 lookupContext.fillStyle = "rgba(0,0,0,1.0)";
             }else if (isInArray(countries, i)) {
-                lookupContext.fillStyle = cssColor;
+                lookupContext.fillStyle = color;
             }else {
                 lookupContext.fillStyle = "rgba(0,0,0,1.0)";
             }
@@ -882,9 +888,9 @@ DAT.Globe = function (container, options) {
     }
 
     function setCameraToRegion(regionName) {
-        var regionRef = findRegionInRef(regionName, "full");
-        if(regionRef != null && regionRef.loc !== undefined){
-            setCameraToPoint(regionRef.loc[0], regionRef.loc[1], true, regionRef.zoom);
+        currentRegion = findRegionInRef(regionName, "full");
+        if(currentRegion != null && currentRegion.loc !== undefined){
+            setCameraToPoint(currentRegion.loc[0], currentRegion.loc[1], true, currentRegion.zoom);
         } else {
             var oldDistance = {x: distanceTarget};
             var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
@@ -895,9 +901,7 @@ DAT.Globe = function (container, options) {
             tweenSetZoomIn.start();
         }
 
-        var color = (controlPanel.BattleMode) ? "#F00000" : controlPanel.RegionColor;
-        var countries = regionRef == null ? [] : regionRef.countries;
-        paintRegion(countries, color);
+        paintRegion(currentRegion);
     }
 
     function setCameraToPoint(lat, lng, zoom, zoomFactor) {
