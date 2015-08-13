@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
-    <title>Globe of War</title>
+    <title>World of Wargamers</title>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 	<meta name="author" content="wargaming.net">
     
@@ -126,6 +126,10 @@
 					return;
 				}
 
+				if (curView == "Tweets") {
+					$('#twitter-container').vTicker('stop');
+				}
+
 				$( "#twitter-items" ).empty();
 		
 				var tweets = jsonObj._items;
@@ -145,11 +149,39 @@
 						$("#twitter-items").append("<li lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\">" + msg + "</blockquote></li>");
 					}
 				});
+
+				if (curView == "Tweets")
+				{
+					$('#twitter-container').vTicker({
+						speed: 500,
+						pause: 8000,
+						animation: 'fade',
+						mousePause: true,
+						padding: 5,
+						height: $(window).height() - 150
+					});
+
+					$('#twitter-container').on('vticker.beforeTick', function() {
+						if (curView == "Tweets") {
+							//updateTweetsActiveRow();
+							var ul = jQuery('#twitter-container ul');
+							lat = ul.children('li:nth-child(2)').attr("lat");
+							long = ul.children('li:nth-child(2)').attr("long");
+							city = ul.children('li:nth-child(2)').attr("city");
+							cnt = getTweetsInCity(city);
+							globe.setCameraToPoint(lat, long);
+							globe.attachGeoMarker(city + ":", lat, long, "tweets " + cnt, "");
+						}
+
+					});
+				}
+
+
 			};
 
 			function requestTweetsMessages() {
 				$.ajax({
-					//url: 'http://10.175.129.7:5000/twittertop?max_results=100',
+					//url: 'http://10.175.129.7:5000/twittertop?max_results=15',
 					url: 'tweetsmsg.json',
 					//dataType: 'json',
 					type: 'GET',
@@ -259,6 +291,7 @@
 				$('#regions').find('ul').children(":first").removeClass("disabled");
 			}
 
+			/*
 			function updateTweetsOpacity()
 			{
 				var ul = jQuery('#twitter-container ul');
@@ -272,9 +305,49 @@
 				var ul = jQuery('#twitter-container ul');
 
 				var interval = 500;
-				ul.children('li:nth-child(1)').animate({opacity: .73}, interval);
+				ul4').animate({opacity: .73}, interval);
 				ul.children('li:nth-child(2)').animate({opacity: 1}, interval);
+				ul.children('li:nth-child(3)').animate({opacity: 1}, interval);
 			}
+			 */
+
+            function uptateTweetControl(maxTweetWindowTop, maxTweetWindowBottom)
+            {
+                var lastVisible = null;
+
+                // Check that list items not completely visible in viewport are hidden
+                $('#twitter-container ul li').each(function() {
+
+                    var thisTop = $(this).offset().top - $(window).scrollTop(); // Get the `top` of this `li`
+
+                    // Check if this element is in the interested viewport
+                    if (thisTop >= maxTweetWindowTop && (thisTop + $(this).height()) <= maxTweetWindowBottom) {
+                        $(this).show();
+                        lastVisible = $(this);
+                    } else {
+                        $(this).hide(); // if it did, hide the current element
+                        $(this).nextAll().hide(); //hide all other list also
+                        return false; // break the loop to stop the further iteration
+                    }
+                });
+
+                var indexFirst = $("#twitter-container ul li:visible:first").index();
+                var indexLast = $("#twitter-container ul li:visible:last").index();
+                var opacityStep = (0.5) / (indexLast - indexFirst);
+
+                var opacity = 0.2;
+
+
+                $('#twitter-container ul li:visible').each(function() {
+                    var index = $(this).index();
+                    $(this).css({opacity: opacity});
+
+                    opacity += opacityStep;
+                });
+
+
+                return  lastVisible;
+            }
 
 			$(document).ready(function ($) {
 				requestRegions();
@@ -282,6 +355,11 @@
 				requestTweetsMessages();
 				
 				globe.animate();
+
+                // Get viewport height, gridTop and gridBottom
+                var maxTweetWindowTop = 0;
+                var maxTweetWindowBottom = $(window).height() - 45;
+
 
 				$("#regions").click(function(event) {
 					id = $(event.target).attr("id");
@@ -352,27 +430,32 @@
 								globe.setCameraToRegion("All");
 
 								$("#twitter-container").show();
-								updateTweetsOpacity();
+								//updateTweetsOpacity();
 
-								$('#twitter-container').vTicker({
+								$('#twitter-container').vTicker('init', {
 									speed: 500,
 									pause: 8000,
 									animation: 'fade',
-									showItems: 7,
 									mousePause: true,
+									padding: 5,
 									height: $(window).height() - 150
 								});
 
-								$('#twitter-container').on('vticker.beforeTick', function() {
+                                uptateTweetControl(maxTweetWindowTop, maxTweetWindowBottom);
+
+								$('#twitter-container').on('vticker.afterTick', function() {
 									if (curView == "Tweets") {
-										updateTweetsActiveRow();
-										var ul = jQuery('#twitter-container ul');
-										lat = ul.children('li:nth-child(2)').attr("lat");
-										long = ul.children('li:nth-child(2)').attr("long");
-										city = ul.children('li:nth-child(2)').attr("city");
+                                        var lastElement = uptateTweetControl(maxTweetWindowTop, maxTweetWindowBottom);
+
+                                        lastElement.fadeTo('slow', 1);
+
+                                        lat = lastElement.attr("lat");
+										long = lastElement.attr("long");
+										city = lastElement.attr("city");
+
 										cnt = getTweetsInCity(city);
-										globe.setCameraToPoint(lat, long);
-										globe.attachGeoMarker(city + ":", lat, long, "tweets " + cnt, "");
+										globe.attachGeoMarker(city + ":", lat, long, "Tweets " + cnt, "Lat:" + Number(lat).toFixed(2) + "; Lng:" + Number(long).toFixed(2));
+                                        globe.setCameraToPoint(lat, long);
 									}
 
 								});
@@ -386,8 +469,8 @@
 			});
 
 			setInterval(requestRegions, 60000 * 60 * 24); // once per day
-			setInterval(requestTweetsLocations, 60000 * 60); // once per hour
-			setInterval(requestTweetsMessages, 60000 * 60); // once per hour
+			setInterval(requestTweetsLocations, 50 * 30000); // once per 60 sec
+			setInterval(requestTweetsMessages, 50 * 30000); // once per 60 sec
 		}
 
 	</script>

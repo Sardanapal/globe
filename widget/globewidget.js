@@ -287,6 +287,7 @@ DAT.Globe = function (container, options) {
         var gui = new dat.GUI();
         gui.close();
 
+        gui.useLocalStorage = true;
         gui.remember(controlPanel);
 
         var controller = gui.add(controlPanel, 'AutoRotation').listen();
@@ -586,6 +587,10 @@ DAT.Globe = function (container, options) {
     }
 
     function addTweetBar(lat, lng, perc, color, city, tweetCnt) {
+        if(controlPanel.TweetColor !== "#000000"){
+            color = new THREE.Color(controlPanel.TweetColor);
+        }
+
         var barHeight = Math.max(perc * MAX_BAR_HEIGHT, 1);
         var barWidth =  Math.max(BAR_WIDTH * 5 * perc, BAR_WIDTH);
 
@@ -609,8 +614,11 @@ DAT.Globe = function (container, options) {
         if (zoffset > 1.5) zoffset = 1.5;
         var coord1 = calcCoordinates(lat, lng, zoffset * EARTH_RADIUS);
 
-        attachMarker( city, coord1, "Tweets: " + tweetCnt);
+        //attachMarker( city, coord1, "Tweets: " + tweetCnt);
 
+        point.scale.z = barHeight;
+
+        /*
         var height = {z : 1};
         var tweenGrow = new TWEEN.Tween(height)
             .to({z: barHeight}, 2000)
@@ -619,6 +627,7 @@ DAT.Globe = function (container, options) {
             });
 
         tweenGrow.start();
+        */
     }
 
     function addPoint(lat, lng, perc, color, region, pccu) {
@@ -876,6 +885,7 @@ DAT.Globe = function (container, options) {
     function setCameraToPoint(lat, lng, zoom, zoomFactor) {
 
         zoom = typeof zoom !== 'undefined' ? zoom : false;
+        zoomFactor = typeof zoomFactor !== 'undefined' ? zoomFactor : 1.0;
 
         var coord = calcCoordinates(lat, lng, distance);
 
@@ -886,6 +896,7 @@ DAT.Globe = function (container, options) {
         var rotationStart = globe.rotation.y;// rotation start point
         var rotationEnd = (2 * Math.PI - globe.rotation.y) > globe.rotation.y ? 0 : 2 * Math.PI;
 
+
         var oldTarget = new THREE.Vector3();
         oldTarget.x = target.x;
         oldTarget.y = target.y;
@@ -893,11 +904,13 @@ DAT.Globe = function (container, options) {
 
         var newTarget = new THREE.Vector3();
         newTarget.y = Math.asin(coord.y / distance);
-        newTarget.x = Math.asin(coord.x / distance / Math.cos(newTarget.y)) + (lng < 0 ? Math.PI : 0);
+        newTarget.x = Math.asin(coord.x / distance / Math.cos(newTarget.y)) + (lng < -25 ? Math.PI : 0);
+
+        //newTarget.x = Math.asin(coord.x / distance / Math.cos(newTarget.y)) + 0;
         newTarget.z = rotationEnd;
 
         var dist = newTarget.distanceTo(oldTarget);
-	
+
         // rotation task
         var tweenSetPoint = new TWEEN.Tween(oldTarget)
             .to(newTarget, dist * 1000)

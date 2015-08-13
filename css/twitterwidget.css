@@ -11,11 +11,12 @@
 }
 
 #twitter-container ul li div {
+    overflow: hidden;
     border: 1px solid #aaaaaa;
     background: #ffffff;
 }
-blockquote.twitter-tweet {
 
+blockquote.twitter-tweet {
     border-color: #eee #ddd #bbb;
     border-radius: 5px;
     border-style: solid;
@@ -25,7 +26,6 @@ blockquote.twitter-tweet {
     padding: 0 16px 16px 16px;
     max-width: 300px;
     background: white;
-    opacity: 0.5;
 
     color: black;
     font-family: Arial;
