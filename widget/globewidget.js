@@ -89,6 +89,7 @@ DAT.Globe = function (container, options) {
 
     var regionData;
     var currentRegion;
+    var currentTween;
 
     var lookupContext, lookupTexture;
 
@@ -888,6 +889,9 @@ DAT.Globe = function (container, options) {
     }
 
     function setCameraToRegion(regionName) {
+        if(currentTween !== undefined) {
+            currentTween.stop();
+        }
         currentRegion = findRegionInRef(regionName, "full");
         if(currentRegion != null && currentRegion.loc !== undefined){
             setCameraToPoint(currentRegion.loc[0], currentRegion.loc[1], true, currentRegion.zoom);
@@ -899,6 +903,7 @@ DAT.Globe = function (container, options) {
                     distanceTarget = oldDistance.x;
                 });
             tweenSetZoomIn.start();
+            currentTween = tweenSetZoomIn;
         }
 
         paintRegion(currentRegion);
@@ -956,8 +961,10 @@ DAT.Globe = function (container, options) {
             tweenSetZoomOut.chain(tweenSetPoint);
             tweenSetPoint.chain(tweenSetZoomIn);
             tweenSetZoomOut.start();
+            currentTween = tweenSetZoomOut;
         } else {
             tweenSetPoint.start();
+            currentTween = tweenSetPoint;
         }
     }
 
