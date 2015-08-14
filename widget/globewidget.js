@@ -929,11 +929,11 @@ DAT.Globe = function (container, options) {
 
         var newTarget = new THREE.Vector3();
         newTarget.y = Math.asin(coord.y / distance);
-        newTarget.x = Math.asin(coord.x / distance / Math.cos(newTarget.y)) + (lng < 0 ? Math.PI : 0);
+        newTarget.x = Math.asin(coord.x / distance / Math.cos(newTarget.y)) + (lng < -25 ? Math.PI : 0);
         newTarget.z = rotationEnd;
 
         var dist = newTarget.distanceTo(oldTarget);
-	
+
         // rotation task
         var tweenSetPoint = new TWEEN.Tween(oldTarget)
             .to(newTarget, dist * 1000)
