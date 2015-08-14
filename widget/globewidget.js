@@ -86,6 +86,7 @@ DAT.Globe = function (container, options) {
 
     var distance = 10000, distanceTarget = 640;
     var PI_HALF = Math.PI / 2;
+    var ROTATION_DELTA = 0.003;
 
     var regionData;
     var currentRegion;
@@ -368,11 +369,11 @@ DAT.Globe = function (container, options) {
             setFiguresColor(barContainer, color);
         });
 
-        var regionColorController = gui.addColor(controlPanel, "RegionColor").listen();
+        /*var regionColorController = gui.addColor(controlPanel, "RegionColor").listen();
         regionColorController.onChange(function (value) {
             // change region color if it was selected
             paintRegion(currentRegion);
-        });
+        });*/
     }
 
     function setFiguresColor(container, color){
@@ -926,11 +927,17 @@ DAT.Globe = function (container, options) {
         var coord = calcCoordinates(lat, lng, distance);
 
         globe.rotation.y = globe.rotation.y % ( 2 * Math.PI);
-        controlPanel.AutoRotation = false;
+        if(!controlPanel.RegionsAutoCycle) {
+            controlPanel.AutoRotation = false;
+        }
 
         // define globe rotation task to zero point
         var rotationStart = globe.rotation.y;// rotation start point
-        var rotationEnd = (2 * Math.PI - globe.rotation.y) > globe.rotation.y ? 0 : 2 * Math.PI;
+        var rotationEnd = 0; //(2 * Math.PI - globe.rotation.y) > globe.rotation.y ? 0 : 2 * Math.PI;
+        if(controlPanel.RegionsAutoCycle && controlPanel.AutoRotation){
+            rotationEnd = -PI_HALF / 2;
+            ROTATION_DELTA = 0;
+        }
 
         var oldTarget = new THREE.Vector3();
         oldTarget.x = target.x;
@@ -951,6 +958,12 @@ DAT.Globe = function (container, options) {
                 target.x = oldTarget.x;
                 target.y = oldTarget.y;
                 globe.rotation.y = oldTarget.z;
+            })
+            .onStop(function(){
+                ROTATION_DELTA = 0.003;
+            })
+            .onComplete(function(){
+                ROTATION_DELTA = 0.003;
             });
 
 	    // zoom task
@@ -982,7 +995,7 @@ DAT.Globe = function (container, options) {
     function render() {
         zoom(curZoomSpeed);
 
-        globe.rotation.y += controlPanel.AutoRotation ? 0.003 : 0.0;
+        globe.rotation.y += controlPanel.AutoRotation ? ROTATION_DELTA : 0.0;
 
         rotation.x += (target.x - rotation.x) * 0.2;
         rotation.y += (target.y - rotation.y) * 0.2;
