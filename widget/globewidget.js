@@ -13,14 +13,14 @@ DAT.Globe = function (container, options) {
         };
 
     var RegionsRef = [
-        {full: "Europe", short:"EU", loc: [47.97, 16.097], zoom : 1.5, countries:[35, 69, 186, 100, 103, 120, 140, 57,
+        {full: "Europe", short:"EU", loc: [47.97, 16.097], zoom : 1.0, countries:[35, 69, 186, 100, 103, 120, 140, 57,
             118, 28 , 48, 81, 167, 48, 134, 131, 58, 3, 84, 44, 59 , 111, 133, 144, 54, 112, 67, 13, 36,  113, 77, 94, 15, 175]},
-        {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 3.0, countries:[124]},
+        {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 1.0, countries:[124]},
         {full: "North America", short:"NA", loc: [37.6,-95.665], zoom : 1.0, countries:[97, 150, 21]},
-        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.5, countries:[96]},
-        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.5, countries:[96]},
+        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.0, countries:[96]},
+        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.0, countries:[96]},
         {full: "Russia", short:"RU", loc: [55.749792,37.6324949], zoom : 1.0, countries:[92]},
-        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.5, countries:[91, 123, 138, 50,  107, 170, 160, 7, 228, 108]}
+        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.0, countries:[91, 123, 138, 50,  107, 170, 160, 7, 228, 108]}
     ];
 
     var Shaders = {
@@ -290,6 +290,7 @@ DAT.Globe = function (container, options) {
         var gui = new dat.GUI();
         gui.close();
 
+        gui.useLocalStorage = true;
         gui.remember(controlPanel);
 
         var controller = gui.add(controlPanel, 'AutoRotation').listen();
@@ -596,6 +597,10 @@ DAT.Globe = function (container, options) {
     }
 
     function addTweetBar(lat, lng, perc, color, city, tweetCnt) {
+        if(controlPanel.TweetColor !== "#000000"){
+            color = new THREE.Color(controlPanel.TweetColor);
+        }
+
         var barHeight = Math.max(perc * MAX_BAR_HEIGHT, 1);
         var barWidth =  Math.max(BAR_WIDTH * 5 * perc, BAR_WIDTH);
 
@@ -619,8 +624,11 @@ DAT.Globe = function (container, options) {
         if (zoffset > 1.5) zoffset = 1.5;
         var coord1 = calcCoordinates(lat, lng, zoffset * EARTH_RADIUS);
 
-        attachMarker( city, coord1, "Tweets: " + tweetCnt);
+        //attachMarker( city, coord1, "Tweets: " + tweetCnt);
 
+        point.scale.z = barHeight;
+
+        /*
         var height = {z : 1};
         var tweenGrow = new TWEEN.Tween(height)
             .to({z: barHeight}, 2000)
@@ -629,6 +637,7 @@ DAT.Globe = function (container, options) {
             });
 
         tweenGrow.start();
+        */
     }
 
     function addPoint(lat, lng, perc, color, region, pccu) {
@@ -912,6 +921,7 @@ DAT.Globe = function (container, options) {
     function setCameraToPoint(lat, lng, zoom, zoomFactor) {
 
         zoom = typeof zoom !== 'undefined' ? zoom : false;
+        zoomFactor = typeof zoomFactor !== 'undefined' ? zoomFactor : 1.0;
 
         var coord = calcCoordinates(lat, lng, distance);
 
@@ -946,13 +956,13 @@ DAT.Globe = function (container, options) {
 	    // zoom task
         var oldDistance = {x: distanceTarget};
         var tweenSetZoomOut = new TWEEN.Tween(oldDistance)
-            .to({x: 1100}, 1000)
+            .to({x: distanceTarget * 1.5}, 700)
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
             });
 
         var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
-            .to({x: 640 / zoomFactor}, 1000)
+            .to({x: distanceTarget / zoomFactor}, 700)
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
             });

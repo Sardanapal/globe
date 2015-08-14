@@ -1,395 +1,450 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
-    <title>Globe of War</title>
-	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-	<meta name="author" content="wargaming.net">
-    
-	<link rel="shortcut icon" href="favicon.ico">
-	<link rel="stylesheet" type="text/css" href="css/main.css">
-	
+    <title>World of Wargamers</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta name="author" content="wargaming.net">
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
     <link rel="stylesheet" type="text/css" href="css/menuwidget.css">
     <link rel="stylesheet" type="text/css" href="css/twitterwidget.css">
     <link rel="stylesheet" type="text/css" href="css/globewidget.css">
-	<script type="text/javascript" src="css/globeoptions.js"></script>
+    <script type="text/javascript" src="css/globeoptions.js"></script>
 
-	<script type="text/javascript" src="third-party/detector.js"></script>
-	<script type="text/javascript" src="third-party/three.js"></script>
-	<script type="text/javascript" src="third-party/jquery-2.1.4.min.js"></script>
-	<script type="text/javascript" src="third-party/dat.gui.js"></script>
-	<script type="text/javascript" src="third-party/tween.min.js"></script>
-
-	<script type="text/javascript" src="widget/globewidget.js"></script>
-	<script type="text/javascript" src="widget/twitter.vticker.js"></script>
+    <script type="text/javascript" src="third-party/detector.js"></script>
+    <script type="text/javascript" src="third-party/three.js"></script>
+    <script type="text/javascript" src="third-party/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="third-party/dat.gui.js"></script>
+    <script type="text/javascript" src="third-party/tween.min.js"></script>
+    <script type="text/javascript" src="widget/globewidget.js"></script>
 </head>
 
 <body>
-	
-	
-	<div class="top-header">
-		<h1 id="header">WoT ALL REGIONS/BATTLES</h1>
-	</div>
-	
-	<div id="globe-container" class="globe"></div>
 
-	<div class="menu-container">
-		<div id="regions">
-			<ul class="panel">
-				<li><h3>REGIONS:</h3></li>
-				<li id="region-all"           	class="animation">All Regions</li>
-				<li id="region-europe"        	class="animation">Europe</li>
-				<li id="region-korea"         	class="animation">Korea</li>
-				<li id="region-north-america"  	class="animation">North America</li>
-				<li id="region-north-china"    	class="animation">North China</li>
-				<li id="region-russia"        	class="animation">Russia</li>
-				<li id="region-south-china"    	class="animation">South China</li>
-				<li id="region-south-east-asia"	class="animation">South-East Asia</li>
-			</ul>
-		</div>
-		<div id="statistics">
-			<ul class="panel">
-				<li><h3>DISPLAY:</h3></li>
-				<li id="stat-pcu"		class="animation">WoT PCCU</li>
-				<li id="stat-battles"	class="animation">WoT Battles/Players</li>
-				<li id="stat-tweetts"	class="animation">WoT Latest Tweets</li>
-			</ul>
-		</div>
-		<div id="time-period">
-			<ul class="panel">
-				<li><h3>TIME PERIOD:</h3></li>
-				<li id="time-last-24hrs"          class="animation">Last 24 hrs</li>
-			</ul>
-		</div>
-	</div>
-	
-	<div id="twitter-container">
-		<ul id="twitter-items">
-		</ul>
-	</div>
 
-	<div class="bottom-footer">
-		<h3 id="footer">Past 24 hrs</h3>
-	</div>
+<div class="top-header">
+    <h1 id="header">WoT ALL REGIONS/BATTLES</h1>
+</div>
 
-	<div class="logo">
-		<img src="image/logo.png" alt="Wargaming logo"/>
-	</div>
+<div id="globe-container" class="globe"></div>
 
-	<script type="text/javascript">
+<div class="menu-container">
+    <div id="regions">
+        <ul class="panel">
+            <li><h3>REGIONS:</h3></li>
+            <li id="region-all" class="animation">All Regions</li>
+            <li id="region-europe" class="animation">Europe</li>
+            <li id="region-korea" class="animation">Korea</li>
+            <li id="region-north-america" class="animation">North America</li>
+            <li id="region-north-china" class="animation">North China</li>
+            <li id="region-russia" class="animation">Russia</li>
+            <li id="region-south-china" class="animation">South China</li>
+            <li id="region-south-east-asia" class="animation">South-East Asia</li>
+        </ul>
+    </div>
+    <div id="statistics">
+        <ul class="panel">
+            <li><h3>DISPLAY:</h3></li>
+            <li id="stat-pcu" class="animation">WoT PCCU</li>
+            <li id="stat-battles" class="animation">WoT Battles/Players</li>
+            <li id="stat-tweetts" class="animation">WoT Latest Tweets</li>
+        </ul>
+    </div>
+    <div id="time-period">
+        <ul class="panel">
+            <li><h3>TIME PERIOD:</h3></li>
+            <li id="time-last-24hrs" class="animation">Last 24 hrs</li>
+        </ul>
+    </div>
+</div>
 
-	
-		$('#twitter-container').hide();
+<div id="twitter-container">
+    <ul id="twitter-items">
+    </ul>
+</div>
 
-		if (!Detector.webgl) {
-			Detector.addGetWebGLMessage();
-		} else {
+<div class="bottom-footer">
+    <h3 id="footer">Past 24 hrs</h3>
+</div>
 
-			var container = document.getElementById('globe-container');
-			var globe = new DAT.Globe(container, globeOptions);
+<div class="logo">
+    <img src="image/logo.png" alt="Wargaming logo"/>
+</div>
 
-			var ajaxRegions = null;
-			var ajaxTweetMsg = null;
-			var ajaxTweetLoc = null;
+<script type="text/javascript">
+    if (!Detector.webgl) {
+        Detector.addGetWebGLMessage();
+        throw new Error(Detector.getWebGLErrorMessage());
+    }
 
-			var curView = "Region"; // PCU, Tweets, Region
-			var regionName = "All";
+    $('#twitter-container').hide();
 
-			var activeRegionsMenuItemID = null;
-			var activeStatMenuItemID = null;
+    var maxTweetWindowTop = 0;
+    var maxTweetWindowBottom = 0;
+    var activeTweetMsgIndex = 0;
+    var maxTweetMsgIndex = 0;
+    var tweetTimerId = null;
 
-			function getTweetsInCity(city) {
-				if (ajaxTweetLoc) {
-					arr = ajaxTweetLoc._items.filter(
-							function (data) {
-								return data.city == city
-							}
-					);
+    var container = document.getElementById('globe-container');
+    var globe = new DAT.Globe(container, globeOptions);
 
-					if (arr && arr.length > 0) {
-						return arr[0].twit_cnt;
-					}
-				}
+    var ajaxRegions = null;
+    var ajaxTweetMsg = null;
+    var ajaxTweetLoc = null;
 
-				return 0;
-			}
+    var curView = "Region"; // PCU, Tweets, Region
+    var regionName = "All";
 
-			Array.prototype.removeValue = function(name, value){
-				var array = $.map(this, function(v,i){
-					return v[name] === value ? null : v;
-				});
-				this.length = 0; //clear original array
-				this.push.apply(this, array); //push all elements except the one we want to delete
-			}
+    var activeRegionsMenuItemID = null;
+    var activeStatMenuItemID = null;
 
-			function processTweets(jsonObj) {
-				if(jsonObj == undefined || jsonObj._items == undefined) {
-					return;
-				}
+    function getTweetsInCity(city) {
+        if (ajaxTweetLoc) {
+            arr = ajaxTweetLoc._items.filter(
+                    function (data) {
+                        return data.city == city
+                    }
+            );
 
-				$( "#twitter-items" ).empty();
-		
-				var tweets = jsonObj._items;
+            if (arr && arr.length > 0) {
+                return arr[0].twit_cnt;
+            }
+        }
 
-				tweets.forEach(function(tweet){
-					city = tweet.city;
-					msg = tweet.text;
+        return 0;
+    }
 
-					latitude = tweet.loc[0];
-					longitude = tweet.loc[1];
+    Array.prototype.removeValue = function (name, value) {
+        var array = $.map(this, function (v, i) {
+            return v[name] === value ? null : v;
+        });
+        this.length = 0; //clear original array
+        this.push.apply(this, array); //push all elements except the one we want to delete
+    }
 
-					if (city && city.trim().length > 0) {
-						city = city.trim();
-						$("#twitter-items").append("<li city = \"" + city + "\" lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\"><b>" + city + ": </b>" + msg + "</blockquote></li>");
-					} else {
-						msg = msg.trim();
-						$("#twitter-items").append("<li lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\">" + msg + "</blockquote></li>");
-					}
-				});
-			};
+    function processTweets(jsonObj) {
+        if (jsonObj == undefined || jsonObj._items == undefined) {
+            return;
+        }
 
-			function requestTweetsMessages() {
-				$.ajax({
-					//url: 'http://10.175.129.7:5000/twittertop?max_results=100',
-					url: 'tweetsmsg.json',
-					//dataType: 'json',
-					type: 'GET',
-					async: true,
-					cache: false,
-					error: function () {
-						return true;
-					},
-					success: function (msg) {
-						msg._items.removeValue("city", " ");
-						msg._items.sort(function(a, b) {
-							var res = a.cntr_short.localeCompare(b.cntr_short);
-							if (res == 0) {
-								res = a.city.localeCompare(b.city);
-							}
+        if (curView == "Tweets") {
+            $('#twitter-container').fadeTo('slow', 0);
+        }
 
-							return res;
-						});
+        $("#twitter-items").empty();
 
-						ajaxTweetMsg = msg;
-						processTweets(ajaxTweetMsg);
-					}
-				});
-			}
-			
-			function requestTweetsLocations() {
-				$.ajax({
-					//url: 'http://10.175.129.7:5000/citytwits?max_results=100',
-					url: 'tweetsloc.json',
-					//dataType: 'json',
-					type: 'GET',
-					async: true,
-					cache: false,
-					error: function () {
-						return true;
-					},
-					success: function (msg) {
-						msg._items.removeValue("city", " ");
+        var tweets = jsonObj._items;
 
-						ajaxTweetLoc = msg;
-						globe.removeOldTweets();
-						
-						if(curView == "Tweets"){
-							globe.drawTweets(ajaxTweetLoc);
-						}
-					}
-				});
-			}
+        tweets.forEach(function (tweet) {
+            city = tweet.city;
+            msg = tweet.text;
 
-			function requestRegions() {
-				$.ajax({
-					//url: 'http://10.175.129.7:5000/citytop?max_results=1',
-					url: 'pcu.json',
-					//dataType: 'json',
-					type: 'GET',
-					async: true,
-					cache: false,
-					error: function () {
-						return true;
-					},
-					success: function (msg) {
-						msg._items.removeValue("country", "N/D");
+            latitude = tweet.loc[0];
+            longitude = tweet.loc[1];
 
-						ajaxRegions = msg;
-						globe.removeOldData();
-						if(curView == "PCU") {
-							globe.drawPCUStatistic(ajaxRegions);
-						} else if(curView == "Region"){
-							globe.drawGameStatistic(ajaxRegions, regionName);
-						}
-					}
-				});
-			}
+            if (city && city.trim().length > 0) {
+                city = city.trim();
+                $("#twitter-items").append("<li city = \"" + city + "\" lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\"><b>" + city + ": </b>" + msg + "</blockquote></li>");
+            } else {
+                msg = msg.trim();
+                $("#twitter-items").append("<li lat = \"" + latitude + "\" long=\"" + longitude + "\"><blockquote class=\"twitter-tweet\">" + msg + "</blockquote></li>");
+            }
+        });
 
-			function highlightMenuItem(id, isHighlighted)
-			{
-				if (id && typeof id !== "undefined") {
-					if (isHighlighted) {
-						$("#" + id).addClass("active");
-					} else {
-						$("#" + id).removeClass("active");
-					}
-				}
-			}
+        // reset index to a first item
+        activeTweetMsgIndex = 0;
 
-			function disableMenuItem(id, isDisabled)
-			{
-				if (id && typeof id !== "undefined") {
-					if (isDisabled) {
-						$("#" + id).addClass("disabled");
-					} else {
-						$("#" + id).removeClass("disabled");
-					}
-				}
-			}
+        if (curView == "Tweets") {
+            reformatTweetControl(maxTweetWindowTop, maxTweetWindowBottom);
+            $('#twitter-container').fadeTo('slow', 1);
+        }
+    }
+    ;
 
-			function disableRegionsMenuItems(isDisabled)
-			{
-				if (isDisabled) {
-					$('#regions').find('ul').children().addClass("disabled");
-					$('#regions').find('ul').children().removeClass("animation");
-				} else {
-					$('#regions').find('ul').children().removeClass("disabled");
-					$('#regions').find('ul').children().addClass("animation");
-				}
+    function requestTweetsMessages() {
+        $.ajax({
+            //url: 'http://10.175.129.7:5000/twittertop?max_results=15',
+            url: 'tweetsmsg.json',
+            //dataType: 'json',
+            type: 'GET',
+            async: true,
+            cache: false,
+            error: function () {
+                return true;
+            },
+            success: function (msg) {
+                msg._items.removeValue("city", " ");
+                msg._items.sort(function (a, b) {
+                    var res = a.cntr_short.localeCompare(b.cntr_short);
+                    if (res == 0) {
+                        res = a.city.localeCompare(b.city);
+                    }
 
-				$('#regions').find('ul').children(":first").removeClass("disabled");
-			}
+                    return res;
+                });
 
-			function updateTweetsOpacity()
-			{
-				var ul = jQuery('#twitter-container ul');
+                ajaxTweetMsg = msg;
+                processTweets(ajaxTweetMsg);
+            }
+        });
+    }
 
-				ul.children().css({opacity: .73});
-				ul.children('li:nth-child(2)').css({opacity: 1});
-			}
+    function requestTweetsLocations() {
+        $.ajax({
+            //url: 'http://10.175.129.7:5000/citytwits?max_results=100',
+            url: 'tweetsloc.json',
+            //dataType: 'json',
+            type: 'GET',
+            async: true,
+            cache: false,
+            error: function () {
+                return true;
+            },
+            success: function (msg) {
+                msg._items.removeValue("city", " ");
 
-			function updateTweetsActiveRow()
-			{
-				var ul = jQuery('#twitter-container ul');
+                ajaxTweetLoc = msg;
+                globe.removeOldTweets();
 
-				var interval = 500;
-				ul.children('li:nth-child(1)').animate({opacity: .73}, interval);
-				ul.children('li:nth-child(2)').animate({opacity: 1}, interval);
-			}
+                if (curView == "Tweets") {
+                    globe.drawTweets(ajaxTweetLoc);
+                }
+            }
+        });
+    }
 
-			$(document).ready(function ($) {
-				requestRegions();
-				requestTweetsLocations();
-				requestTweetsMessages();
-				
-				globe.animate();
+    function requestRegions() {
+        $.ajax({
+            //url: 'http://10.175.129.7:5000/citytop?max_results=1',
+            url: 'pcu.json',
+            //dataType: 'json',
+            type: 'GET',
+            async: true,
+            cache: false,
+            error: function () {
+                return true;
+            },
+            success: function (msg) {
+                msg._items.removeValue("country", "N/D");
 
-				$("#regions").click(function(event) {
-					id = $(event.target).attr("id");
-					if (curView == "Region" && typeof id !== "undefined") {
+                ajaxRegions = msg;
+                globe.removeOldData();
+                if (curView == "PCU") {
+                    globe.drawPCUStatistic(ajaxRegions);
+                } else if (curView == "Region") {
+                    globe.drawGameStatistic(ajaxRegions, regionName);
+                }
+            }
+        });
+    }
 
-						highlightMenuItem(activeRegionsMenuItemID, false);
-						activeRegionsMenuItemID = id;
-						highlightMenuItem(activeRegionsMenuItemID, true);
+    function highlightMenuItem(id, isHighlighted) {
+        if (id && typeof id !== "undefined") {
+            if (isHighlighted) {
+                $("#" + id).addClass("active");
+            } else {
+                $("#" + id).removeClass("active");
+            }
+        }
+    }
 
-						globe.removeOldData();
-						globe.removeOldTweets();
-						globe.stopCycling();
+    function disableMenuItem(id, isDisabled) {
+        if (id && typeof id !== "undefined") {
+            if (isDisabled) {
+                $("#" + id).addClass("disabled");
+            } else {
+                $("#" + id).removeClass("disabled");
+            }
+        }
+    }
 
-						switch (id) {
-							case "region-all" :
-								regionName = "All";
-								$("#header").text("ALL REGIONS/BATTLES");
-								break;
-							default :
-								regionName = $(event.target).text();
-								$("#header").text(regionName + "/BATTLES");
-								break;
-						}
+    function disableRegionsMenuItems(isDisabled) {
+        if (isDisabled) {
+            $('#regions').find('ul').children().addClass("disabled");
+            $('#regions').find('ul').children().removeClass("animation");
+        } else {
+            $('#regions').find('ul').children().removeClass("disabled");
+            $('#regions').find('ul').children().addClass("animation");
+        }
 
-						globe.drawGameStatistic(ajaxRegions, regionName);
-						globe.setCameraToRegion(regionName);
-					}
-				});
+        $('#regions').find('ul').children(":first").removeClass("disabled");
+    }
 
-				$("#statistics").click(function(event) {
-					id = $(event.target).attr("id");
-					if (typeof id !== "undefined") {
+    /*
+     function updateTweetsOpacity()
+     {
+     var ul = jQuery('#twitter-container ul');
 
-						highlightMenuItem(activeStatMenuItemID, false);
-						activeStatMenuItemID = id;
-						highlightMenuItem(activeStatMenuItemID, true);
+     ul.children().css({opacity: .73});
+     ul.children('li:nth-child(2)').css({opacity: 1});
+     }
 
-						globe.removeOldData();
-						globe.removeOldTweets();
-						globe.stopCycling();
+     function updateTweetsActiveRow()
+     {
+     var ul = jQuery('#twitter-container ul');
 
-						if (curView == "Tweets") {
-							$('#twitter-container').vTicker('stop');
-							$("#twitter-container").fadeIn();
-							$("#twitter-container").hide();
-						}
+     var interval = 500;
+     ul4').animate({opacity: .73}, interval);
+     ul.children('li:nth-child(2)').animate({opacity: 1}, interval);
+     ul.children('li:nth-child(3)').animate({opacity: 1}, interval);
+     }
+     */
 
-						switch (id) {
-							case "stat-pcu" :
-								$("#header").text("WoT ALL REGIONS/PCCU");
-								globe.drawPCUStatistic(ajaxRegions);
-								globe.setCameraToRegion("All");
-								curView = "PCU";
-								disableRegionsMenuItems(true);
-								break;
-							case "stat-battles" :
-								$("#header").text("WoT ALL REGIONS/BATTLES");
-								var region = "All";
-								//globe.drawGameStatistic(ajaxRegions, region);
-								globe.runCycling(ajaxRegions);
-								//globe.setCameraToRegion(region);
-								curView = "Region";
-								disableRegionsMenuItems(false);
-								break;
-							case "stat-tweetts" : 
-								$("#header").text("WoT ALL REGIONS/TWEETS");
-								globe.drawTweets(ajaxTweetLoc);
-								globe.setCameraToRegion("All");
+    function reformatTweetControl(maxTweetWindowTop, maxTweetWindowBottom) {
+        $("#twitter-container ul li").nextAll().show();
 
-								$("#twitter-container").show();
-								updateTweetsOpacity();
+        // Check that list items not completely visible in viewport are hidden
+        $('#twitter-container ul li').each(function () {
+            var opacity = 0.6;
+            var thisTop = $(this).offset().top - $(window).scrollTop(); // Get the `top` of this `li`
 
-								$('#twitter-container').vTicker({
-									speed: 500,
-									pause: 8000,
-									animation: 'fade',
-									showItems: 7,
-									mousePause: true,
-									height: $(window).height() - 150
-								});
+            // Check if this element is in the interested viewport
+            if (thisTop >= maxTweetWindowTop && (thisTop + $(this).height()) <= maxTweetWindowBottom) {
+                $(this).show();
+                $(this).css({opacity: opacity});
+            } else {
+                maxTweetMsgIndex = $(this).index() - 1;
+                $(this).hide(); // if it did, hide the current element
+                $(this).nextAll().hide(); //hide all other list also
+                return false; // break the loop to stop the further iteration
+            }
+        });
+    }
 
-								$('#twitter-container').on('vticker.beforeTick', function() {
-									if (curView == "Tweets") {
-										updateTweetsActiveRow();
-										var ul = jQuery('#twitter-container ul');
-										lat = ul.children('li:nth-child(2)').attr("lat");
-										long = ul.children('li:nth-child(2)').attr("long");
-										city = ul.children('li:nth-child(2)').attr("city");
-										cnt = getTweetsInCity(city);
-										globe.setCameraToPoint(lat, long);
-										globe.attachGeoMarker(city + ":", lat, long, "tweets " + cnt, "");
-									}
+    function switchNewTweet() {
+        if (curView != "Tweets") {
+            return;
+        }
 
-								});
+        var ul = jQuery('#twitter-container ul');
 
-								curView = "Tweets";
-								disableRegionsMenuItems(true);
-								break;
-						}
-					}
-				});
-			});
+        if (activeTweetMsgIndex != 0)
+            ul.children('li:nth-child(' + activeTweetMsgIndex + ')').css({opacity: 0.6});
 
-			setInterval(requestRegions, 60000 * 60 * 24); // once per day
-			setInterval(requestTweetsLocations, 60000 * 60); // once per hour
-			setInterval(requestTweetsMessages, 60000 * 60); // once per hour
-		}
+        activeTweetMsgIndex++;
 
-	</script>
+        if (activeTweetMsgIndex > maxTweetMsgIndex)
+            activeTweetMsgIndex = 1;
+
+        var activeTweet = ul.children('li:nth-child(' + activeTweetMsgIndex + ')');
+
+        activeTweet.css({opacity: 1});
+
+        var lat = activeTweet.attr("lat");
+        var long = activeTweet.attr("long");
+        var city = activeTweet.attr("city");
+
+        var cnt = getTweetsInCity(city);
+
+        globe.attachGeoMarker(city + ":", lat, long, "Tweets " + cnt, "Lat:" + Number(lat).toFixed(2) + "; Lng:" + Number(long).toFixed(2));
+        globe.setCameraToPoint(lat, long);
+
+    }
+
+
+    $(document).ready(function ($) {
+        requestRegions();
+        requestTweetsLocations();
+        requestTweetsMessages();
+
+        globe.animate();
+
+        // Get viewport height, gridTop and gridBottom
+        maxTweetWindowTop = 0;
+        maxTweetWindowBottom = $(window).height() - 45;
+
+        $("#regions").click(function (event) {
+            id = $(event.target).attr("id");
+            if (curView == "Region" && typeof id !== "undefined") {
+
+                highlightMenuItem(activeRegionsMenuItemID, false);
+                activeRegionsMenuItemID = id;
+                highlightMenuItem(activeRegionsMenuItemID, true);
+
+                globe.removeOldData();
+                globe.removeOldTweets();
+                globe.stopCycling();
+
+                switch (id) {
+                    case "region-all" :
+                        regionName = "All";
+                        $("#header").text("ALL REGIONS/BATTLES");
+                        break;
+                    default :
+                        regionName = $(event.target).text();
+                        $("#header").text(regionName + "/BATTLES");
+                        break;
+                }
+
+                globe.drawGameStatistic(ajaxRegions, regionName);
+                globe.setCameraToRegion(regionName);
+            }
+        });
+
+        $("#statistics").click(function (event) {
+            id = $(event.target).attr("id");
+            if (typeof id !== "undefined") {
+
+                highlightMenuItem(activeStatMenuItemID, false);
+                activeStatMenuItemID = id;
+                highlightMenuItem(activeStatMenuItemID, true);
+
+                globe.removeOldData();
+                globe.removeOldTweets();
+                globe.stopCycling();
+
+                if (curView == "Tweets") {
+                    if (id != "stat-tweetts")
+                        $("#twitter-container").fadeTo('fast', 0);
+                    if (tweetTimerId != null)
+                        clearInterval(tweetTimerId);
+                }
+
+                switch (id) {
+                    case "stat-pcu" :
+                        $("#header").text("WoT ALL REGIONS/PCCU");
+                        globe.drawPCUStatistic(ajaxRegions);
+                        globe.setCameraToRegion("All");
+                        curView = "PCU";
+                        disableRegionsMenuItems(true);
+                        break;
+                    case "stat-battles" :
+                        $("#header").text("WoT ALL REGIONS/BATTLES");
+                        var region = "All";
+                        //globe.drawGameStatistic(ajaxRegions, region);
+                        globe.runCycling(ajaxRegions);
+                        //globe.setCameraToRegion(region);
+                        curView = "Region";
+                        disableRegionsMenuItems(false);
+                        break;
+                    case "stat-tweetts" :
+                        $("#header").text("WoT ALL REGIONS/TWEETS");
+                        globe.drawTweets(ajaxTweetLoc);
+                        globe.setCameraToRegion("All");
+
+                        $("#twitter-container").fadeTo('fast', 1);
+
+                        reformatTweetControl(maxTweetWindowTop, maxTweetWindowBottom);
+
+                        // Run tweet globe rotation timer
+                        tweetTimerId = setInterval(switchNewTweet, 5000);
+                        activeTweetMsgIndex = 0;
+
+                        curView = "Tweets";
+
+                        disableRegionsMenuItems(true);
+                        break;
+                }
+            }
+        });
+    });
+
+    setInterval(requestRegions, 60000 * 60 * 24); // once per day
+    setInterval(requestTweetsLocations, 30000); // once per 60 sec
+    setInterval(requestTweetsMessages, 30000); // once per 60 sec
+
+</script>
 </body>
 </html>
