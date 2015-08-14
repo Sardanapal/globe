@@ -962,7 +962,7 @@ DAT.Globe = function (container, options) {
 
         var newTarget = new THREE.Vector3();
         newTarget.y = Math.asin( coord.y / distance );
-        newTarget.x = Math.asin( Math.abs(coord.x) / distance / Math.cos(newTarget.y)) + (lng < 0 ? Math.PI : 0 );
+        newTarget.x = Math.asin( (lng < 0 ? Math.abs(coord.x):coord.x) / distance / Math.cos(newTarget.y)) + (lng < 0 ? Math.PI : 0 );
         newTarget.z = rotationEnd;
 
         var dist = newTarget.distanceTo(oldTarget);
