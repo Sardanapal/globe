@@ -1211,6 +1211,7 @@ DAT.Globe = function (container, options) {
         markers = [];
     }
 
+
     function screenXY(positionIn3D){
         var widthHalf = 0.5 * renderer.context.canvas.width;
         var heightHalf = 0.5 * renderer.context.canvas.height;
