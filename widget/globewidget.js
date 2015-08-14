@@ -105,7 +105,9 @@ DAT.Globe = function (container, options) {
         this.ShowStatTable = (options.showStatTable !== undefined && options.showStatTable == true) ? true : false;
         this.TweetColor = (options.tweetColor !== undefined) ? options.tweetColor : "#000000";
         this.BarColor = (options.barColor !== undefined) ? options.barColor : "#000000";
+        this.BattleBarColor = (options.barBattleColor !== undefined) ? options.barBattleColor : "#FF0000";
         this.RegionColor = (options.regionColor !== undefined) ? options.regionColor : "#00D200";
+        this.BattleRegionColor = (options.regionBattleColor !== undefined) ? options.regionBattleColor : "#CC0000";
     }
 
     function init() {
@@ -319,7 +321,7 @@ DAT.Globe = function (container, options) {
             controlPanel.hideChangeSkinOption(modeOn);
             setEarthSkin(skinFileName);
             // in battle mode all bars should be red
-            var color = new THREE.Color(modeOn ? "#FF0000" : controlPanel.barColor);
+            var color = new THREE.Color(modeOn ? controlPanel.barBattleColor : controlPanel.barColor);
             setFiguresColor(barContainer, color);
             paintRegion(currentRegion);
         });
@@ -369,11 +371,25 @@ DAT.Globe = function (container, options) {
             setFiguresColor(barContainer, color);
         });
 
-        /*var regionColorController = gui.addColor(controlPanel, "RegionColor").listen();
+        var barBattleColorController = gui.addColor(controlPanel, "BattleBarColor").listen();
+        barBattleColorController.onChange(function (value) {
+            var color = new THREE.Color(value);
+            setFiguresColor(barContainer, color);
+        });
+
+
+        var regionColorController = gui.addColor(controlPanel, "RegionColor").listen();
         regionColorController.onChange(function (value) {
             // change region color if it was selected
             paintRegion(currentRegion);
-        });*/
+        });
+
+        var regionBattleColorController = gui.addColor(controlPanel, "BattleRegionColor").listen();
+        regionBattleColorController.onChange(function (value) {
+            // change region color if it was selected
+            paintRegion(currentRegion);
+        });
+
     }
 
     function setFiguresColor(container, color){
@@ -880,7 +896,7 @@ DAT.Globe = function (container, options) {
 
     function paintRegion(regionRef){
         var countries = regionRef == null ? [] : regionRef.countries;
-        var color = (controlPanel.BattleMode) ? "#F00000" : controlPanel.RegionColor;
+        var color = (controlPanel.BattleMode) ? controlPanel.BattleRegionColor : controlPanel.RegionColor;
 
         lookupContext.clearRect(0,0,256,1);
         for (var i = 0; i < 228; i++){
