@@ -550,6 +550,7 @@ DAT.Globe = function (container, options) {
                 city.city.slice(0, 1).toUpperCase() + city.city.slice(1), city.battles, city.players);
         });
     };
+    
 
     function drawTweets(jsonObj) {
         var lat, lng;
