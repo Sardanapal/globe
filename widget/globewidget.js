@@ -13,14 +13,14 @@ DAT.Globe = function (container, options) {
         };
 
     var RegionsRef = [
-        {full: "Europe", short:"EU", loc: [47.97, 16.097], zoom : 1.5, countries:[35, 69, 186, 100, 103, 120, 140, 57,
+        {full: "Europe", short:"EU", loc: [47.97, 16.097], zoom : 1.0, countries:[35, 69, 186, 100, 103, 120, 140, 57,
             118, 28 , 48, 81, 167, 48, 134, 131, 58, 3, 84, 44, 59 , 111, 133, 144, 54, 112, 67, 13, 36,  113, 77, 94, 15, 175]},
-        {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 3.0, countries:[124]},
+        {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 1.0, countries:[124]},
         {full: "North America", short:"NA", loc: [37.6,-95.665], zoom : 1.0, countries:[97, 150, 21]},
-        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.5, countries:[96]},
-        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.5, countries:[96]},
+        {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.0, countries:[96]},
+        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.0, countries:[96]},
         {full: "Russia", short:"RU", loc: [55.749792,37.6324949], zoom : 1.0, countries:[92]},
-        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.5, countries:[91, 123, 138, 50,  107, 170, 160, 7, 228, 108]}
+        {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.0, countries:[91, 123, 138, 50,  107, 170, 160, 7, 228, 108]}
     ];
 
     var Shaders = {
@@ -932,7 +932,6 @@ DAT.Globe = function (container, options) {
         var rotationStart = globe.rotation.y;// rotation start point
         var rotationEnd = (2 * Math.PI - globe.rotation.y) > globe.rotation.y ? 0 : 2 * Math.PI;
 
-
         var oldTarget = new THREE.Vector3();
         oldTarget.x = target.x;
         oldTarget.y = target.y;
@@ -941,8 +940,6 @@ DAT.Globe = function (container, options) {
         var newTarget = new THREE.Vector3();
         newTarget.y = Math.asin(coord.y / distance);
         newTarget.x = Math.asin(coord.x / distance / Math.cos(newTarget.y)) + (lng < -25 ? Math.PI : 0);
-
-        //newTarget.x = Math.asin(coord.x / distance / Math.cos(newTarget.y)) + 0;
         newTarget.z = rotationEnd;
 
         var dist = newTarget.distanceTo(oldTarget);
@@ -959,13 +956,13 @@ DAT.Globe = function (container, options) {
 	    // zoom task
         var oldDistance = {x: distanceTarget};
         var tweenSetZoomOut = new TWEEN.Tween(oldDistance)
-            .to({x: 1100}, 1000)
+            .to({x: distanceTarget * 1.5}, 700)
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
             });
 
         var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
-            .to({x: 640 / zoomFactor}, 1000)
+            .to({x: distanceTarget / zoomFactor}, 700)
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
             });
