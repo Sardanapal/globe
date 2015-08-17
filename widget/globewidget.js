@@ -329,7 +329,6 @@ DAT.Globe = function (container, options) {
         controller = gui.add(controlPanel, 'StarsVisible').listen();
         controller.onChange(function (value) {
             $("body").css("background", controlPanel.StarsVisible ? "#000000 url(" + imgDir + "starfield.jpg) repeat" : "#000000");
-            setCameraToPoint(52.59, 30.51);
         });
 
         controller = gui.add(controlPanel, 'DayMode').listen();
@@ -964,7 +963,7 @@ DAT.Globe = function (container, options) {
 
         var newTarget = new THREE.Vector3();
         newTarget.y = Math.asin( coord.y / distance );
-        newTarget.x = Math.asin( ( lng < 0  ? Math.abs(coord.x):coord.x) / distance / Math.cos(newTarget.y)) + (lng < 0 ? Math.PI : 0 );
+        newTarget.x = Math.asin( (lng < 0 ? Math.abs(coord.x):coord.x) / distance / Math.cos(newTarget.y)) + (lng < 0 ? Math.PI : 0 );
         newTarget.z = rotationEnd;
 
         var dist = newTarget.distanceTo(oldTarget);
@@ -1212,7 +1211,6 @@ DAT.Globe = function (container, options) {
         $('#visualization').empty();
         markers = [];
     }
-
 
     function screenXY(positionIn3D){
         var widthHalf = 0.5 * renderer.context.canvas.width;

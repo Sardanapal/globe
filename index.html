@@ -305,7 +305,7 @@
                 $(this).show();
                 $(this).css({opacity: opacity});
             } else {
-                maxTweetMsgIndex = $(this).index() - 1;
+                maxTweetMsgIndex = $(this).index();
                 $(this).hide(); // if it did, hide the current element
                 $(this).nextAll().hide(); //hide all other list also
                 return false; // break the loop to stop the further iteration
@@ -442,8 +442,8 @@
     });
 
     setInterval(requestRegions, 60000 * 60 * 24); // once per day
-    setInterval(requestTweetsLocations, 30000); // once per 60 sec
-    setInterval(requestTweetsMessages, 30000); // once per 60 sec
+    setInterval(requestTweetsLocations, 30000); // once per 30 sec
+    setInterval(requestTweetsMessages, 30000); // once per 30 sec
 
 </script>
 </body>
