@@ -321,7 +321,7 @@ DAT.Globe = function (container, options) {
             controlPanel.hideChangeSkinOption(modeOn);
             setEarthSkin(skinFileName);
             // in battle mode all bars should be red
-            var color = new THREE.Color(modeOn ? controlPanel.barBattleColor : controlPanel.barColor);
+            var color = new THREE.Color(modeOn ? controlPanel.BattleBarColor : controlPanel.BarColor);
             setFiguresColor(barContainer, color);
             paintRegion(currentRegion);
         });
