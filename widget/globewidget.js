@@ -18,8 +18,8 @@ DAT.Globe = function (container, options) {
         {full: "Korea", short:"KR", loc: [35.8615124,127.096405], zoom : 1.0, countries:[124]},
         {full: "North America", short:"NA", loc: [37.6,-95.665], zoom : 1.0, countries:[97, 150, 21]},
         {full: "North China", short:"CN_N", loc: [39.956174, 104.110969], zoom : 1.0, countries:[96]},
-        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.0, countries:[96]},
         {full: "Russia", short:"RU", loc: [55.749792,37.6324949], zoom : 1.0, countries:[92]},
+        {full: "South China", short:"CN_S", loc: [27.425535, 106.923469], zoom : 1.0, countries:[96]},
         {full: "South-East Asia", short:"SEA", loc: [1.3147308,103.8470128], zoom : 1.0, countries:[91, 123, 138, 50,  107, 170, 160, 7, 228, 108]}
     ];
 
@@ -970,7 +970,7 @@ DAT.Globe = function (container, options) {
 
         // rotation task
         var tweenSetPoint = new TWEEN.Tween(oldTarget)
-            .to(newTarget, dist * 1000)
+            .to(newTarget, dist * 500)
             .onUpdate(function () {
                 target.x = oldTarget.x;
                 target.y = oldTarget.y;
