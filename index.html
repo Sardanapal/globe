@@ -81,6 +81,9 @@
 
     $('#twitter-container').hide();
 
+    // Set to true to read AJAX data from local files
+    var DEBUG = true;
+
     var maxTweetWindowTop = 0;
     var maxTweetWindowBottom = 0;
     var activeTweetMsgIndex = 0;
@@ -165,9 +168,7 @@
 
     function requestTweetsMessages() {
         $.ajax({
-            //url: 'http://10.175.129.7:5000/twittertop?max_results=15',
-            url: 'tweetsmsg.json',
-            //dataType: 'json',
+            url: (DEBUG == true) ? 'tweetsmsg.json' : 'http://10.175.129.7:5000/twittertop?max_results=15',
             type: 'GET',
             async: true,
             cache: false,
@@ -193,9 +194,7 @@
 
     function requestTweetsLocations() {
         $.ajax({
-            //url: 'http://10.175.129.7:5000/citytwits?max_results=100',
-            url: 'tweetsloc.json',
-            //dataType: 'json',
+            url: (DEBUG == true) ? 'tweetsloc.json' : 'http://10.175.129.7:5000/citytwits?max_results=100',
             type: 'GET',
             async: true,
             cache: false,
@@ -217,9 +216,7 @@
 
     function requestRegions() {
         $.ajax({
-            //url: 'http://10.175.129.7:5000/citytop?max_results=1',
-            url: 'pcu.json',
-            //dataType: 'json',
+            url: (DEBUG == true) ? 'pcu.json' : 'http://10.175.129.7:5000/citytop?max_results=1',
             type: 'GET',
             async: true,
             cache: false,
@@ -314,7 +311,7 @@
     }
 
     function switchNewTweet() {
-        if (curView != "Tweets") {
+        if (curView != "Tweets" || activeTweetMsgIndex == -1) {
             return;
         }
 
@@ -326,7 +323,14 @@
         activeTweetMsgIndex++;
 
         if (activeTweetMsgIndex > maxTweetMsgIndex)
-            activeTweetMsgIndex = 1;
+        {
+            requestTweetsLocations();
+            requestTweetsMessages();
+
+            activeTweetMsgIndex = -1;
+
+            return;
+        }
 
         var activeTweet = ul.children('li:nth-child(' + activeTweetMsgIndex + ')');
 
@@ -429,7 +433,7 @@
                         reformatTweetControl(maxTweetWindowTop, maxTweetWindowBottom);
 
                         // Run tweet globe rotation timer
-                        tweetTimerId = setInterval(switchNewTweet, 5000);
+                        tweetTimerId = setInterval(switchNewTweet,7000);
                         activeTweetMsgIndex = 0;
 
                         curView = "Tweets";
@@ -442,8 +446,8 @@
     });
 
     setInterval(requestRegions, 60000 * 60 * 24); // once per day
-    setInterval(requestTweetsLocations, 30000); // once per 30 sec
-    setInterval(requestTweetsMessages, 30000); // once per 30 sec
+    //setInterval(requestTweetsLocations, 30000); // once per 30 sec
+    //setInterval(requestTweetsMessages, 30000); // once per 30 sec
 
 </script>
 </body>

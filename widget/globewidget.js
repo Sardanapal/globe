@@ -314,14 +314,15 @@ DAT.Globe = function (container, options) {
             };
         })(controller.domElement.childNodes[0]);
 
-        controller = gui.add(controlPanel, 'BattleMode').listen();
-        controller.onChange(function (modeOn) {
+        var battleModeController = gui.add(controlPanel, 'BattleMode').listen();
+        battleModeController.onChange(function (modeOn) {
             var skinFileName = controlPanel.BattleMode ? "battlemode.jpg" :
                 controlPanel.DayMode ? "worldDay.jpg" : "worldNight.jpg";
             controlPanel.hideChangeSkinOption(modeOn);
             setEarthSkin(skinFileName);
             // in battle mode all bars should be red
-            var color = new THREE.Color(modeOn ? controlPanel.barBattleColor : controlPanel.barColor);
+            var color = new THREE.Color(modeOn ? controlPanel.BattleBarColor : controlPanel.BarColor);
+
             setFiguresColor(barContainer, color);
             paintRegion(currentRegion);
         });
@@ -661,12 +662,15 @@ DAT.Globe = function (container, options) {
     function addPoint(lat, lng, perc, color, region, pccu) {
         var barHeight = Math.max(perc * MAX_BAR_HEIGHT, 1);
         var barWidth =  Math.max(BAR_WIDTH * 5 * perc, BAR_WIDTH);
-        if(controlPanel.BarColor !== "#000000"){
-            color = new THREE.Color(controlPanel.BarColor);
-        }
 
-        if(controlPanel.BattleMode){
-            color = new THREE.Color("#FF0000");
+        if (!controlPanel.BattleMode) {
+            if (controlPanel.BarColor !== "#000000") {
+                color = new THREE.Color(controlPanel.BarColor);
+            }
+        } else {
+            if(controlPanel.BattleBarColor !== "#000000" ) {
+                color = new THREE.Color(controlPanel.BattleBarColor);
+            }
         }
 
         var geometry = new THREE.BoxGeometry(barWidth, barWidth, 1);
@@ -704,13 +708,18 @@ DAT.Globe = function (container, options) {
         var geometry = new THREE.BoxGeometry(BAR_WIDTH, BAR_WIDTH, 1);
         var material = new THREE.MeshBasicMaterial({vertexColors: true, transparent: true, opacity: 0});
 
-        if(controlPanel.BarColor !== "#000000"){
-            color1 = color2 = new THREE.Color(controlPanel.BarColor);
+        if (!controlPanel.BattleMode) {
+            if (controlPanel.BarColor !== "#000000") {
+                color1 = new THREE.Color(controlPanel.BarColor);
+                color2 = new THREE.Color(controlPanel.BarColor);
+            }
+        } else {
+            if(controlPanel.BattleBarColor !== "#000000" ) {
+                color1 = new THREE.Color(controlPanel.BattleBarColor);
+                color2 = new THREE.Color(controlPanel.BattleBarColor);
+            }
         }
 
-        if(controlPanel.BattleMode){
-            color1 = color2 = new THREE.Color("#FF0000");
-        }
 
         var barPlayers = new THREE.Mesh(geometry);
         for (var j = 0; j < geometry.faces.length; j++) {
