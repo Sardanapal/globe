@@ -98,7 +98,7 @@
     var ajaxTweetLoc = null;
 
     var curView = "Region"; // PCU, Tweets, Region
-    var regionName = "All";
+    var regionName = "Europe";
 
     var activeRegionsMenuItemID = null;
     var activeStatMenuItemID = null;
@@ -224,8 +224,6 @@
                 return true;
             },
             success: function (msg) {
-                msg._items.removeValue("country", "N/D");
-
                 ajaxRegions = msg;
                 globe.removeOldData();
                 if (curView == "PCU") {
@@ -433,7 +431,7 @@
                         reformatTweetControl(maxTweetWindowTop, maxTweetWindowBottom);
 
                         // Run tweet globe rotation timer
-                        tweetTimerId = setInterval(switchNewTweet,7000);
+                        tweetTimerId = setInterval(switchNewTweet, globe.getRotationTime() * 1000 + 1000);
                         activeTweetMsgIndex = 0;
 
                         curView = "Tweets";

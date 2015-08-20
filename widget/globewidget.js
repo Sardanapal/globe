@@ -90,7 +90,7 @@ DAT.Globe = function (container, options) {
 
     var regionData;
     var currentRegion;
-    var currentTween;
+    var currentTween = null;
 
     var lookupContext, lookupTexture;
 
@@ -108,7 +108,13 @@ DAT.Globe = function (container, options) {
         this.BattleBarColor = (options.barBattleColor !== undefined) ? options.barBattleColor : "#FF0000";
         this.RegionColor = (options.regionColor !== undefined) ? options.regionColor : "#00D200";
         this.BattleRegionColor = (options.regionBattleColor !== undefined) ? options.regionBattleColor : "#CC0000";
+        this.RotationTime = (options.rotationTime !== undefined) ? options.rotationTime : 7;
     }
+
+    function getRotationTime() {
+        return controlPanel.RotationTime;
+    }
+
 
     function init() {
         if(options.barWidth !== undefined && +options.barWidth > 0 && +options.barWidth <= 10) {
@@ -175,8 +181,7 @@ DAT.Globe = function (container, options) {
 
         RegionsRef.nextRegion = 0;
         if(controlPanel.RegionsAutoCycle){
-            cycleRegions();
-            cycleRegions.threadId = setInterval(cycleRegions, 10000);
+            regionsCycleOn();
         }
     }
 
@@ -281,12 +286,12 @@ DAT.Globe = function (container, options) {
 
     function regionsCycleOn(){
         cycleRegions();
-        cycleRegions.threadId = setInterval(cycleRegions, 15000);
+        //cycleRegions.threadId = setInterval(cycleRegions, controlPanel.RotationTime * 1000 + 20000);
     }
 
     function regionsCycleOff(){
-        clearInterval(cycleRegions.threadId);
-        cycleRegions.threadId = 0;
+        //clearInterval(cycleRegions.threadId);
+        //cycleRegions.threadId = 0;
     }
 
     function addControlPanel() {
@@ -345,10 +350,11 @@ DAT.Globe = function (container, options) {
             };
         })(controller.domElement.childNodes[0]);
 
-        controller = gui.add(controlPanel, 'ShowTooltip').listen();
-        controller = gui.add(controlPanel, 'ShowStatistic').listen();
-        controller = gui.add(controlPanel, 'ShowStatTable').listen();
-        controller.onChange(function (value) {
+        gui.add(controlPanel, 'ShowTooltip');
+        gui.add(controlPanel, 'ShowStatistic');
+
+        var showStatTableController = gui.add(controlPanel, 'ShowStatTable').listen();
+        showStatTableController.onChange(function (value) {
             $("#stat_table").toggle();
         });
 
@@ -357,7 +363,7 @@ DAT.Globe = function (container, options) {
 
             return function(disable) {
                 checkBox.disabled = disable;
-        };
+            };
         })(controller.domElement.childNodes[0]);
 
         var tweetColorController = gui.addColor(controlPanel, "TweetColor").listen();
@@ -368,28 +374,38 @@ DAT.Globe = function (container, options) {
 
         var barColorController = gui.addColor(controlPanel, "BarColor").listen();
         barColorController.onChange(function (value) {
-            var color = new THREE.Color(value);
-            setFiguresColor(barContainer, color);
+            if (!controlPanel.BattleMode) {
+                var color = new THREE.Color(value);
+                setFiguresColor(barContainer, color);
+            }
         });
 
         var barBattleColorController = gui.addColor(controlPanel, "BattleBarColor").listen();
         barBattleColorController.onChange(function (value) {
-            var color = new THREE.Color(value);
-            setFiguresColor(barContainer, color);
+            if (controlPanel.BattleMode) {
+                var color = new THREE.Color(value);
+                setFiguresColor(barContainer, color);
+            }
         });
 
 
         var regionColorController = gui.addColor(controlPanel, "RegionColor").listen();
         regionColorController.onChange(function (value) {
-            // change region color if it was selected
-            paintRegion(currentRegion);
+            if (!controlPanel.BattleMode) {
+                // change region color if it was selected
+                paintRegion(currentRegion);
+            }
         });
 
         var regionBattleColorController = gui.addColor(controlPanel, "BattleRegionColor").listen();
         regionBattleColorController.onChange(function (value) {
-            // change region color if it was selected
-            paintRegion(currentRegion);
+            if (controlPanel.BattleMode) {
+                // change region color if it was selected
+                paintRegion(currentRegion);
+            }
         });
+
+       gui.add(controlPanel, 'RotationTime').min(5).max(25).step(1);
 
     }
 
@@ -925,24 +941,15 @@ DAT.Globe = function (container, options) {
     }
 
     function setCameraToRegion(regionName) {
-        if(currentTween !== undefined) {
+        if(currentTween !== null) {
             currentTween.stop();
         }
         currentRegion = findRegionInRef(regionName, "full");
+
         if(currentRegion != null && currentRegion.loc !== undefined){
             setCameraToPoint(currentRegion.loc[0], currentRegion.loc[1], true, currentRegion.zoom);
-        } else {
-            var oldDistance = {x: distanceTarget};
-            var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
-                .to({x: 640 }, 1000)
-                .onUpdate(function () {
-                    distanceTarget = oldDistance.x;
-                });
-            tweenSetZoomIn.start();
-            currentTween = tweenSetZoomIn;
+            paintRegion(currentRegion);
         }
-
-        paintRegion(currentRegion);
     }
 
     function setCameraToPoint(lat, lng, zoom, zoomFactor) {
@@ -979,7 +986,7 @@ DAT.Globe = function (container, options) {
 
         // rotation task
         var tweenSetPoint = new TWEEN.Tween(oldTarget)
-            .to(newTarget, dist * 500)
+            .to(newTarget, controlPanel.RotationTime * 1000 * dist / 6)
             .onUpdate(function () {
                 target.x = oldTarget.x;
                 target.y = oldTarget.y;
@@ -990,20 +997,33 @@ DAT.Globe = function (container, options) {
             })
             .onComplete(function(){
                 ROTATION_DELTA = 0.003;
+                if (!zoom) {
+                    currentTween = null;
+                }
             });
 
 	    // zoom task
+        var currentDistance = distanceTarget;
         var oldDistance = {x: distanceTarget};
         var tweenSetZoomOut = new TWEEN.Tween(oldDistance)
             .to({x: distanceTarget * 1.5}, 700)
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
+            })
+            .onStop(function(){
+                distanceTarget = currentDistance;
             });
 
         var tweenSetZoomIn = new TWEEN.Tween(oldDistance)
             .to({x: distanceTarget / zoomFactor}, 700)
             .onUpdate(function () {
                 distanceTarget = oldDistance.x;
+            })
+            .onStop(function(){
+                distanceTarget = currentDistance;
+            })
+            .onComplete(function(){
+                currentTween = null;
             });
 
         if (zoom) {
@@ -1021,7 +1041,7 @@ DAT.Globe = function (container, options) {
     function render() {
         zoom(curZoomSpeed);
 
-        globe.rotation.y += controlPanel.AutoRotation ? ROTATION_DELTA : 0.0;
+        globe.rotation.y += controlPanel.AutoRotation ? ROTATION_DELTA / (controlPanel.RotationTime / 5.0) : 0.0;
 
         rotation.x += (target.x - rotation.x) * 0.2;
         rotation.y += (target.y - rotation.y) * 0.2;
@@ -1248,6 +1268,13 @@ DAT.Globe = function (container, options) {
         if(markers.fixed){
             return;
         }
+
+        // If globe rotating to point/regions
+        if (currentTween != null) {
+            return;
+        }
+
+
         var visible = markers.filter(function(marker){
             return marker.canBeVisible;
         });
@@ -1264,6 +1291,11 @@ DAT.Globe = function (container, options) {
                 curMarker.hide();
             }
         });
+
+        if (regionName != "All" && controlPanel.RegionsAutoCycle && curMarker != null && curMarker.index + 1 >= visible.length)
+        {
+            cycleRegions();
+        }
 
         var nextIndex = curMarker == null || curMarker.index + 1 >= visible.length ? 0 : curMarker.index + 1;
         curMarker = visible[nextIndex];
@@ -1282,6 +1314,7 @@ DAT.Globe = function (container, options) {
     this.setCameraToPoint = setCameraToPoint;
     this.setCameraToRegion = setCameraToRegion;
     this.attachGeoMarker = attachGeoMarker;
+    this.getRotationTime = getRotationTime;
 
     return this;
 };

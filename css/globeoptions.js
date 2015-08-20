@@ -8,6 +8,10 @@ var globeOptions = {
     showStatTable: true, // turns On/Off table with statistic information in the bottom right corner(default: false)
     barWidth: 1.0,       // define width of the bars on globe(default value 2.75). Can be in limits 0..10
     tweetColor: "#ffffff",// define tweet point color, CSS style (default: program calc color using tweet weight field)
-    barColor: "#ffffff"   // define bar color, CSS style (default: program calc color using bar height)
+    barColor: "#ffffff",   // define bar color, CSS style (default: program calc color using bar height)
                           // When you set "#000000" color program will use default value
+    barBattleColor : "#FF0000", // bar color in battle mode
+    regionColor : "#00D200",    // region color
+    regionBattleColor : "#CC0000",  // region color in battle mode
+    rotationTime : 7        // Globe full rotation time (in seconds)
 };
