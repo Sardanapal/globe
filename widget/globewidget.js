@@ -332,6 +332,7 @@ DAT.Globe = function (container, options) {
                 regionsCycleOff();
             }
         });
+        /*
         controlPanel.hideRegionCyclingOption = (function(element){
             var checkBox = element;
 
@@ -339,6 +340,7 @@ DAT.Globe = function (container, options) {
                 checkBox.disabled = disable;
             };
         })(controller.domElement.childNodes[0]);
+        */
 
         var battleModeController = gui.add(controlPanel, 'BattleMode').listen();
         battleModeController.onChange(function (modeOn) {
@@ -472,7 +474,7 @@ DAT.Globe = function (container, options) {
     function drawPCUStatistic(jsonObj) {
         var lat, lng, perc, color;
 
-        controlPanel.hideRegionCyclingOption(true);
+        //controlPanel.hideRegionCyclingOption(true);
         controlPanel.hideStatTableOption(false);
         if(controlPanel.ShowStatTable){
             $("#stat_table").show();
@@ -595,7 +597,7 @@ DAT.Globe = function (container, options) {
 
         $("#stat_table").hide();
         controlPanel.hideStatTableOption(true);
-        controlPanel.hideRegionCyclingOption(true);
+        //controlPanel.hideRegionCyclingOption(true);
 
         if(jsonObj == undefined || jsonObj._items == undefined){
             return;
