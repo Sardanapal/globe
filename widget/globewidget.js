@@ -1319,7 +1319,6 @@ DAT.Globe = function (container, options) {
 
         if (currentRegion != null && controlPanel.RegionsAutoCycle && curMarker != null && curMarker.index + 1 >= visible.length)
         {
-            alert(currentRegion);
             cycleRegions();
         }
 
