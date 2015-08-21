@@ -106,7 +106,7 @@ DAT.Globe = function (container, options) {
     var ROTATION_DELTA = 0.003;
 
     var regionData;
-    var currentRegion;
+    var currentRegion = null;
     var currentTween = null;
 
     var lookupContext, lookupTexture;
@@ -1317,8 +1317,9 @@ DAT.Globe = function (container, options) {
             }
         });
 
-        if (regionName != "All" && controlPanel.RegionsAutoCycle && curMarker != null && curMarker.index + 1 >= visible.length)
+        if (currentRegion != null && controlPanel.RegionsAutoCycle && curMarker != null && curMarker.index + 1 >= visible.length)
         {
+            alert(currentRegion);
             cycleRegions();
         }
 
