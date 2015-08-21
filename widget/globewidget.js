@@ -132,6 +132,10 @@ DAT.Globe = function (container, options) {
         return controlPanel.RotationTime;
     }
 
+    function getRegionsAutoCycle() {
+        return controlPanel.RegionsAutoCycle;
+    }
+
 
     function init() {
         if(options.barWidth !== undefined && +options.barWidth > 0 && +options.barWidth <= 10) {
@@ -965,8 +969,10 @@ DAT.Globe = function (container, options) {
 
         if(currentRegion != null && currentRegion.loc !== undefined){
             setCameraToPoint(currentRegion.loc[0], currentRegion.loc[1], true, currentRegion.zoom);
-            paintRegion(currentRegion);
         }
+
+        paintRegion(currentRegion);
+
     }
 
     function setCameraToPoint(lat, lng, zoom, zoomFactor) {
@@ -1144,17 +1150,17 @@ DAT.Globe = function (container, options) {
 
         regionData = jsonObj;
 
-        controlPanel.hideRegionCyclingOption(false);
-        controlPanel.RegionsAutoCycle = true;
+        //controlPanel.hideRegionCyclingOption(false);
+        //controlPanel.RegionsAutoCycle = true;
         regionsCycleOn();
     }
 
     function stopCycling(){
-        controlPanel.RegionsAutoCycle = false;
-        if(cycleRegions.threadId != 0) {
-            regionsCycleOff();
-        }
-        controlPanel.hideRegionCyclingOption(false);
+        //controlPanel.RegionsAutoCycle = false;
+        //if(cycleRegions.threadId != 0) {
+        //    regionsCycleOff();
+        //}
+        //controlPanel.hideRegionCyclingOption(false);
     }
 
     function attachGeoMarker( title, lat, lng, text1, text2 ) {
@@ -1332,6 +1338,7 @@ DAT.Globe = function (container, options) {
     this.setCameraToRegion = setCameraToRegion;
     this.attachGeoMarker = attachGeoMarker;
     this.getRotationTime = getRotationTime;
+    this.getRegionsAutoCycle = getRegionsAutoCycle;
 
     return this;
 };

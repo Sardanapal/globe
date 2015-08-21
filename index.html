@@ -415,9 +415,14 @@
                     case "stat-battles" :
                         $("#header").text("WoT ALL REGIONS/BATTLES");
                         var region = "All";
-                        //globe.drawGameStatistic(ajaxRegions, region);
-                        globe.runCycling(ajaxRegions);
-                        //globe.setCameraToRegion(region);
+
+                        if (globe.getRegionsAutoCycle())
+                        {
+                            globe.runCycling(ajaxRegions);
+                        } else {
+                            globe.drawGameStatistic(ajaxRegions, region);
+                            globe.setCameraToRegion(region);
+                        }
                         curView = "Region";
                         disableRegionsMenuItems(false);
                         break;
